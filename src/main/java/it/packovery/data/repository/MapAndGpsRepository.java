@@ -1,4 +1,4 @@
-package persistence.repository;
+package it.packovery.data.repository;
 
 public class MapAndGpsRepository {
 }

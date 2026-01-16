@@ -1,4 +1,4 @@
-package web.model.resources;
+package it.packovery.web.resource;
 
 public class MapAndGpsResource {
 }
