@@ -1,12 +1,13 @@
 package it.packovery.service;
 
-import it.packovery.data.model.Login;
+import it.packovery.data.model.login.Login;
 import it.packovery.data.repository.LoginRepository;
-import it.packovery.service.exception.GenericException;
-import it.packovery.service.exception.InvalidCredentialsException;
-import it.packovery.service.exception.NotFoundException;
+import it.packovery.service.exception.*;
 import it.packovery.web.model.LoginResponse;
 import jakarta.enterprise.context.ApplicationScoped;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 @ApplicationScoped
 public class LoginService {
@@ -48,7 +49,7 @@ public class LoginService {
         return new LoginResponse(
                 login.getId(),
                 login.getEmail(),
-                login.getRole(),
+                login.getRole().name(),
                 login.isAccountStatus()
         );
     }
