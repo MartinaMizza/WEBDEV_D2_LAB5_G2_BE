@@ -6,8 +6,9 @@ import io.quarkus.panache.common.Parameters;
 import it.packovery.data.model.login.Login;
 import it.packovery.service.exception.AccountPermanentlyBlockedException;
 import it.packovery.service.exception.AccountTemporarilyBlockedException;
-import it.packovery.web.resource.LoginResource;
+import it.packovery.service.exception.GenericException;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 import java.time.OffsetDateTime;
@@ -18,12 +19,6 @@ import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
 public class LoginRepository implements PanacheRepository<Login> {
-
-    private final LoginResource loginResource;
-
-    public LoginRepository(LoginResource loginResource) {
-        this.loginResource = loginResource;
-    }
 
     @Transactional
     public Login authenticate(String email, String password) {
@@ -48,7 +43,14 @@ public class LoginRepository implements PanacheRepository<Login> {
 
                 userLogin.setFailedAttempts(0);
                 userLogin.setBlockedUntil(null);
-                persist(userLogin);
+
+                try {
+                    persist(userLogin);
+                }
+                catch (PersistenceException e) {
+                    throw  new GenericException("Failed to save user due to server error");
+                }
+
                 return userLogin;
             }
             else {
@@ -78,6 +80,12 @@ public class LoginRepository implements PanacheRepository<Login> {
             case 6 -> login.setPermanentlyBlocked(true);
         }
 
-        persist(login);
+        try {
+            persist(login);
+        }
+        catch (Exception e) {
+            throw new GenericException("Failed to save user due to server error");
+        }
+
     }
 }
