@@ -1,11 +1,9 @@
 package it.packovery.data.model;
 
-import io.quarkus.security.jpa.UserDefinition;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "user")
-@UserDefinition
+@Table(name = "app_users")
 public class User {
 
     @Id

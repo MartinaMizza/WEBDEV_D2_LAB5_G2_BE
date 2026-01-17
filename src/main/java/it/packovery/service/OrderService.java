@@ -1,23 +1,48 @@
 package it.packovery.service;
 
 import it.packovery.data.model.Order;
-import it.packovery.data.repository.LoggingRepository;
+
 import it.packovery.data.repository.OrderRepository;
+import it.packovery.web.model.OrderResponse;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.NotFoundException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final LoggingService loggingService;
 
-    public OrderService(OrderRepository orderRepository,  LoggingService loggingService) {
+    public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
-        this.loggingService = loggingService;
     }
 
+    public List<OrderResponse> findOrders(Map<String, Object> filters, int page, int offset) {
+        List<Order> ordersList = orderRepository.findOrders(filters, page, offset);
+
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (Order order : ordersList) {
+            orderResponseList.add(toOrderResponse(order));
+        }
+
+        return orderResponseList;
+    }
+
+    public OrderResponse toOrderResponse(Order order){
+
+        return new OrderResponse(
+                order.getId(),
+                order.getOrderStatus().name(),
+                order.getPickupLocation(),
+                order.getDeliveryLocation(),
+                order.getCreatedAt(),
+                order.getPackageWeight().name(),
+                order.getPackageSize().name()
+        );
+    }
+    /*
     public Order getOrderDetail(Long orderId, Long userIdOperatore) {
         Order order = orderRepository.findById(orderId);
 
@@ -34,4 +59,5 @@ public class OrderService {
 
         return order;
     }
+    */
 }
