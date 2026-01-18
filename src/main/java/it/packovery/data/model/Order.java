@@ -1,9 +1,6 @@
 package it.packovery.data.model;
 
-import it.packovery.data.model.enumModel.OrderStatus;
-import it.packovery.data.model.enumModel.PackageSize;
-import it.packovery.data.model.enumModel.PackageWeight;
-import it.packovery.data.model.enumModel.PriorityLevel;
+import it.packovery.data.model.enumModel.*;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -57,22 +54,29 @@ public class Order {
     @Column(name = "actual_weight", precision = 10, scale = 3)
     private BigDecimal actualWeight;
 
-    @Column(name = "pickup_location", nullable = false)
+    @Column(name = "pickup_location", columnDefinition = "TEXT", nullable = false)
     private String pickupLocation;
 
-    @Column(name = "delivery_location", nullable = false)
+    @Column(name = "delivery_location", columnDefinition = "TEXT", nullable = false)
     private String deliveryLocation;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "means_of_transportation")
+    private MeansOfTransportation meansOfTransportation = null;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, optional = false)
+    public MapAndGps mapAndGps;
+
     public Order() {}
 
-    public Order(String trackingCode, OrderStatus orderStatus, OffsetDateTime plannedDeliveryTime, OffsetDateTime actualDeliveryTime, Long deliveryDelay, PriorityLevel priorityLevel, PackageSize packageSize, PackageWeight packageWeight, boolean oversize, boolean overweight, BigDecimal actualSize, BigDecimal actualWeight, String pickupLocation, String deliveryLocation, OffsetDateTime createdAt, User user) {
+    public Order(String trackingCode, OrderStatus orderStatus, OffsetDateTime plannedDeliveryTime, OffsetDateTime actualDeliveryTime, Long deliveryDelay, PriorityLevel priorityLevel, PackageSize packageSize, PackageWeight packageWeight, boolean oversize, boolean overweight, BigDecimal actualSize, BigDecimal actualWeight, String pickupLocation, String deliveryLocation, OffsetDateTime createdAt, MeansOfTransportation meansOfTransportation, User user, MapAndGps mapAndGps) {
         this.trackingCode = trackingCode;
         this.orderStatus = orderStatus;
         this.plannedDeliveryTime = plannedDeliveryTime;
@@ -88,7 +92,9 @@ public class Order {
         this.pickupLocation = pickupLocation;
         this.deliveryLocation = deliveryLocation;
         this.createdAt = createdAt;
+        this.meansOfTransportation = meansOfTransportation;
         this.user = user;
+        this.mapAndGps = mapAndGps;
     }
 
     public Long getId() {
@@ -219,11 +225,27 @@ public class Order {
         this.createdAt = createdAt;
     }
 
+    public MeansOfTransportation getMeansOfTransportation() {
+        return meansOfTransportation;
+    }
+
+    public void setMeansOfTransportation(MeansOfTransportation meansOfTransportation) {
+        this.meansOfTransportation = meansOfTransportation;
+    }
+
     public User getUser() {
         return user;
     }
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public MapAndGps getMapAndGps() {
+        return mapAndGps;
+    }
+
+    public void setMapAndGps(MapAndGps mapAndGps) {
+        this.mapAndGps = mapAndGps;
     }
 }

@@ -4,6 +4,7 @@ import it.packovery.data.model.enumModel.OrderStatus;
 import it.packovery.data.model.enumModel.PackageSize;
 import it.packovery.data.model.enumModel.PackageWeight;
 import it.packovery.service.OrderService;
+import it.packovery.web.model.OrderDetailsResponse;
 import it.packovery.web.model.OrderResponse;
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -90,7 +91,7 @@ public class OrderResource {
             }
             catch (IllegalArgumentException e) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid package si<e value: " + size)
+                        .entity("Invalid package size value: " + size)
                         .build();
             }
         }
@@ -98,6 +99,16 @@ public class OrderResource {
         List<OrderResponse> orderResponseList = orderService.findOrders(filters, page, offset);
 
         return Response.ok(orderResponseList).build();
+    }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({"access_token"})
+    public Response getDetailedOrderById(@PathParam("id") long id) {
+        OrderDetailsResponse orderDetailsResponse = orderService.getDetailedOrderById(id);
+
+        return Response.ok(orderDetailsResponse).build();
     }
 }
 
