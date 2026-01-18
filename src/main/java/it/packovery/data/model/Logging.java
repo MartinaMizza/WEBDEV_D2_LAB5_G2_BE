@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 
 @MongoEntity(collection = "loggings")
 public class Logging {
+    public String note;
     @Id
     ObjectId id;
     ObjectId userId;

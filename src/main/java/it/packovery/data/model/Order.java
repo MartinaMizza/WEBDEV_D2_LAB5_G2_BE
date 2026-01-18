@@ -1,6 +1,5 @@
 package it.packovery.data.model;
 
-import io.quarkus.security.jpa.UserDefinition;
 import it.packovery.data.model.enumModel.OrderStatus;
 import it.packovery.data.model.enumModel.PackageSize;
 import it.packovery.data.model.enumModel.PackageWeight;
@@ -11,8 +10,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "order")
-@UserDefinition
+@Table(name = "orders")
 public class Order {
 
     @Id
@@ -59,12 +57,22 @@ public class Order {
     @Column(name = "actual_weight", precision = 10, scale = 3)
     private BigDecimal actualWeight;
 
+    @Column(name = "pickup_location", nullable = false)
+    private String pickupLocation;
+
+    @Column(name = "delivery_location", nullable = false)
+    private String deliveryLocation;
+
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt = OffsetDateTime.now();
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public Order(Long id, String trackingCode, OrderStatus orderStatus, OffsetDateTime plannedDeliveryTime, OffsetDateTime actualDeliveryTime, Long deliveryDelay, PriorityLevel priorityLevel, PackageSize packageSize, PackageWeight packageWeight, boolean oversize, boolean overweight, BigDecimal actualSize, BigDecimal actualWeight, User user) {
-        this.id = id;
+    public Order() {}
+
+    public Order(String trackingCode, OrderStatus orderStatus, OffsetDateTime plannedDeliveryTime, OffsetDateTime actualDeliveryTime, Long deliveryDelay, PriorityLevel priorityLevel, PackageSize packageSize, PackageWeight packageWeight, boolean oversize, boolean overweight, BigDecimal actualSize, BigDecimal actualWeight, String pickupLocation, String deliveryLocation, OffsetDateTime createdAt, User user) {
         this.trackingCode = trackingCode;
         this.orderStatus = orderStatus;
         this.plannedDeliveryTime = plannedDeliveryTime;
@@ -77,10 +85,11 @@ public class Order {
         this.overweight = overweight;
         this.actualSize = actualSize;
         this.actualWeight = actualWeight;
+        this.pickupLocation = pickupLocation;
+        this.deliveryLocation = deliveryLocation;
+        this.createdAt = createdAt;
         this.user = user;
     }
-
-    public Order() {}
 
     public Long getId() {
         return id;
@@ -184,6 +193,30 @@ public class Order {
 
     public void setActualWeight(BigDecimal actualWeight) {
         this.actualWeight = actualWeight;
+    }
+
+    public String getPickupLocation() {
+        return pickupLocation;
+    }
+
+    public void setPickupLocation(String pickupLocation) {
+        this.pickupLocation = pickupLocation;
+    }
+
+    public String getDeliveryLocation() {
+        return deliveryLocation;
+    }
+
+    public void setDeliveryLocation(String deliveryLocation) {
+        this.deliveryLocation = deliveryLocation;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public User getUser() {
