@@ -31,7 +31,13 @@ public class OrderService {
 
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (Order order : ordersList) {
-            orderResponseList.add(toOrderResponse(order));
+            String[] splitPickupLocation = order.getPickupLocation().split(",");
+            String pickupLocation = splitPickupLocation[1].trim() + " " + splitPickupLocation[3].trim();
+
+            String[] splitDeliveryLocation = order.getDeliveryLocation().split(",");
+            String deliveryLocation = splitDeliveryLocation[1].trim() + " " + splitDeliveryLocation[3].trim();
+
+            orderResponseList.add(toOrderResponse(order, pickupLocation, deliveryLocation));
         }
 
         return orderResponseList;
@@ -91,13 +97,13 @@ public class OrderService {
         );
     }
 
-    public OrderResponse toOrderResponse(Order order){
+    public OrderResponse toOrderResponse(Order order, String pickupLocation, String deliveryLocation){
 
         return new OrderResponse(
                 order.getId(),
                 order.getOrderStatus().name(),
-                order.getPickupLocation(),
-                order.getDeliveryLocation(),
+                pickupLocation,
+                deliveryLocation,
                 order.getCreatedAt(),
                 order.getPackageWeight().name(),
                 order.getPackageSize().name()
