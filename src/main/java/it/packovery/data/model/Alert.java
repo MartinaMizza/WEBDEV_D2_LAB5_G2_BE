@@ -43,6 +43,9 @@ public class Alert {
     @Column(name = "resolution_description", nullable = false)
     private String resolutionDescription;
 
+    @Column(name = "type_alert", nullable = false)
+    private String typeAlert;
+
     @ManyToOne
     @JoinColumn(
             name = "resolved_by",
@@ -50,9 +53,6 @@ public class Alert {
             nullable = true
     )
     private Login resolvedBy;
-
-    @Column(name = "type_alert", nullable = false)
-    private String typeAlert;
 
     public Alert(Long id, AlertStatus status, IssueResolution issueResolution, OffsetDateTime issueCreationTime, Order relatedOrder, OffsetDateTime createdTime, OffsetDateTime resolvedTime, String resolutionDescription, Login resolvedBy, String typeAlert) {
         this.id = id;
