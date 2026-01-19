@@ -30,17 +30,31 @@ public class AlertMonitorService {
     @Scheduled(every = "1m")
     @Transactional
     public void checkDepartureDelays() {
-        AlertConfig alertConfig = alertConfigRepository.find("type", "DELAY_DEPARTURE").firstResult();
+        processAlertCheck("DELAY_DEPARTURE");
+    }
 
+    @Scheduled(every = "1m")
+    @Transactional
+    public void checkDeliveryDelays() {
+        processAlertCheck("DELAY_DELIVERY");
+    }
+
+    private void processAlertCheck(String configType) {
+        AlertConfig alertConfig = alertConfigRepository.find("type", configType).firstResult();
         if (alertConfig == null || !alertConfig.isState()) return;
 
         int thresholdMinutes = Integer.parseInt(alertConfig.getThreshold());
         OffsetDateTime limitTime = OffsetDateTime.now().minusMinutes(thresholdMinutes);
 
-        List<Order> delayedOrders = orderRepository.findPendingOrdersOlderThan(limitTime);
+        List<Order> delayedOrders;
+        if (configType.equals("DELAY_DEPARTURE")) {
+            delayedOrders = orderRepository.findPendingOrdersOlderThan(limitTime);
+        } else {
+            delayedOrders = orderRepository.findInTransitOrdersOlderThan(limitTime);
+        }
 
         for (Order order : delayedOrders) {
-            if (!alertRepository.existsActiveAlert(order.getId())) {
+            if (!alertRepository.existsActiveAlert(order.getId(), alertConfig.getType())) {
                 createAlert(order, alertConfig);
             }
         }

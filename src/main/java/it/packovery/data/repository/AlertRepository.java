@@ -9,8 +9,9 @@ import java.util.List;
 
 @ApplicationScoped
 public class AlertRepository implements PanacheRepository<Alert> {
-    public boolean existsActiveAlert(Long orderId) {
-        return count("relatedOrder.id = ?1 and status = ?2", orderId, IssueResolution.PENDING) > 0;
+    public boolean existsActiveAlert(Long orderId, String type) {
+        return count("relatedOrder.id = ?1 AND typeAlert = ?2 AND issueResolution = ?3",
+                orderId, type, IssueResolution.PENDING) > 0;
     }
 
     public List<Alert> findPendingAlerts() {

@@ -59,4 +59,8 @@ public class OrderRepository implements PanacheRepository<Order> {
     public List<Order> findPendingOrdersOlderThan(OffsetDateTime limitTime) {
         return find("CAST(orderStatus as String) = 'PENDING' AND plannedDeliveryTime < ?1", limitTime).list();
     }
+
+    public List<Order> findInTransitOrdersOlderThan(OffsetDateTime limitTime) {
+        return find("CAST(orderStatus as String) IN ('SHIPPED', 'IN_TRANSIT') AND plannedDeliveryTime < ?1", limitTime).list();
+    }
 }
