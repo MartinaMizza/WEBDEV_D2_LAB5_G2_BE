@@ -1,7 +1,7 @@
 package it.packovery.data.model;
 
-import io.quarkus.security.jpa.UserDefinition;
 import it.packovery.data.model.enumModel.AlertStatus;
+import it.packovery.data.model.enumModel.IssueResolution;
 import it.packovery.data.model.login.Login;
 import jakarta.persistence.*;
 
@@ -21,7 +21,7 @@ public class Alert {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "issue_resolution", nullable = false, columnDefinition = "issue_resolution_enum")
-    private AlertStatus issueResolution;
+    private IssueResolution issueResolution;
 
     @Column(name = "issue_creation_time")
     private OffsetDateTime issueCreationTime;
@@ -51,7 +51,10 @@ public class Alert {
     )
     private Login resolvedBy;
 
-    public Alert(Long id, AlertStatus status, AlertStatus issueResolution, OffsetDateTime issueCreationTime, Order relatedOrder, OffsetDateTime createdTime, OffsetDateTime resolvedTime, String resolutionDescription, Login resolvedBy) {
+    @Column(name = "type_alert", nullable = false)
+    private String typeAlert;
+
+    public Alert(Long id, AlertStatus status, IssueResolution issueResolution, OffsetDateTime issueCreationTime, Order relatedOrder, OffsetDateTime createdTime, OffsetDateTime resolvedTime, String resolutionDescription, Login resolvedBy, String typeAlert) {
         this.id = id;
         this.status = status;
         this.issueResolution = issueResolution;
@@ -61,6 +64,7 @@ public class Alert {
         this.resolvedTime = resolvedTime;
         this.resolutionDescription = resolutionDescription;
         this.resolvedBy = resolvedBy;
+        this.typeAlert = typeAlert;
     }
 
     public Alert() {}
@@ -81,11 +85,11 @@ public class Alert {
         this.status = status;
     }
 
-    public AlertStatus getIssueResolution() {
+    public IssueResolution getIssueResolution() {
         return issueResolution;
     }
 
-    public void setIssueResolution(AlertStatus issueResolution) {
+    public void setIssueResolution(IssueResolution issueResolution) {
         this.issueResolution = issueResolution;
     }
 
@@ -136,6 +140,10 @@ public class Alert {
     public void setResolvedBy(Login resolvedBy) {
         this.resolvedBy = resolvedBy;
     }
+
+    public String getTypeAlert() { return typeAlert;}
+
+    public void setTypeAlert(String typeAlert) { this.typeAlert = typeAlert;}
 }
 
 
