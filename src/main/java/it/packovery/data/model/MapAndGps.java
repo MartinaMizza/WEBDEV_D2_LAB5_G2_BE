@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "map_and_gps")
+@Table(name = "maps_and_gps")
 public class MapAndGps {
 
     @Id
