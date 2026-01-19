@@ -1,6 +1,7 @@
 package it.packovery.data.model;
 
 import io.quarkus.security.jpa.UserDefinition;
+import it.packovery.data.model.login.Login;
 import jakarta.persistence.*;
 
 @Entity
