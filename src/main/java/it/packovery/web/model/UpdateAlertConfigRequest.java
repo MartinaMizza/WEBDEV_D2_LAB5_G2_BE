@@ -1,39 +1,13 @@
-package it.packovery.data.model;
+package it.packovery.web.model;
 
-import jakarta.persistence.*;
+public class UpdateAlertConfigRequest {
 
-@Entity
-@Table(name = "alerts_config")
-public class AlertConfig {
-
-    @Id
     private String id;
-
-    @Column(name = "type", nullable = false)
     private String type;
-
-    @Column(name = "name", nullable = false)
     private String name;
-
-    @Column(name = "description", nullable = false)
     private String description;
-
-    @Column(name = "threshold", nullable = false)
     private String threshold;
-
-    @Column(name = "state", nullable = false)
-    private boolean state;
-
-    public AlertConfig(String id, String type, String name, String description, String threshold, boolean state) {
-        this.id = id;
-        this.type = type;
-        this.name = name;
-        this.description = description;
-        this.threshold = threshold;
-        this.state = state;
-    }
-
-    public AlertConfig() {}
+    private Boolean state;
 
     public String getId() {
         return id;
@@ -75,11 +49,11 @@ public class AlertConfig {
         this.threshold = threshold;
     }
 
-    public boolean isState() {
+    public Boolean getState() {
         return state;
     }
 
-    public void setState(boolean state) {
+    public void setState(Boolean state) {
         this.state = state;
     }
 }

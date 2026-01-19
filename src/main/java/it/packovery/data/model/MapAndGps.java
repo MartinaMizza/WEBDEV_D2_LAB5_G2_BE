@@ -1,13 +1,11 @@
 package it.packovery.data.model;
 
-import io.quarkus.security.jpa.UserDefinition;
 import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "map_and_gps")
-@UserDefinition
 public class MapAndGps {
 
     @Id
@@ -42,8 +40,13 @@ public class MapAndGps {
     @Column(name = "distance_traveled")
     private Double distanceTraveled;
 
-    public MapAndGps(Long id, User rider, Double riderLatitude, Double riderLongitude, OffsetDateTime positionTimestamp, Double pickupLatitude, Double pickupLongitude, Double deliveryLatitude, Double deliveryLongitude, Double distanceTraveled) {
-        this.id = id;
+    @OneToOne
+    @JoinColumn(name = "order_id", unique = true) // colonna FK in map_and_gps
+    public Order order;
+
+    public MapAndGps() {}
+
+    public MapAndGps(User rider, Double riderLatitude, Double riderLongitude, OffsetDateTime positionTimestamp, Double pickupLatitude, Double pickupLongitude, Double deliveryLatitude, Double deliveryLongitude, Double distanceTraveled, Order order) {
         this.rider = rider;
         this.riderLatitude = riderLatitude;
         this.riderLongitude = riderLongitude;
@@ -53,9 +56,8 @@ public class MapAndGps {
         this.deliveryLatitude = deliveryLatitude;
         this.deliveryLongitude = deliveryLongitude;
         this.distanceTraveled = distanceTraveled;
+        this.order = order;
     }
-
-    public MapAndGps() {}
 
     public Long getId() {
         return id;
@@ -135,5 +137,13 @@ public class MapAndGps {
 
     public void setDistanceTraveled(Double distanceTraveled) {
         this.distanceTraveled = distanceTraveled;
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
     }
 }
