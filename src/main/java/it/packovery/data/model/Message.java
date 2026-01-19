@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "message")
-@UserDefinition
 public class Message {
 
     @Id

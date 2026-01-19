@@ -9,7 +9,6 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "alert")
-@UserDefinition
 public class Alert {
 
     @Id
