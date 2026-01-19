@@ -63,4 +63,10 @@ public class OrderRepository implements PanacheRepository<Order> {
     public List<Order> findInTransitOrdersOlderThan(OffsetDateTime limitTime) {
         return find("CAST(orderStatus as String) IN ('SHIPPED', 'IN_TRANSIT') AND plannedDeliveryTime < ?1", limitTime).list();
     }
+
+    public List<Order> findOrdersWithLostGps(OffsetDateTime timeout) {
+        return find("CAST(orderStatus as String) IN ('SHIPPED', 'IN_TRANSIT') AND " +
+                        "id IN (SELECT mg.order.id FROM MapAndGps mg WHERE mg.positionTimestamp < ?1)",
+                timeout).list();
+    }
 }

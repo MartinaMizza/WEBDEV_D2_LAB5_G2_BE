@@ -39,6 +39,12 @@ public class AlertMonitorService {
         processAlertCheck("DELAY_DELIVERY");
     }
 
+    @Scheduled(every = "1m")
+    @Transactional
+    public void checkGpsSignal() {
+        processAlertCheck("GPS_LOST");
+    }
+
     private void processAlertCheck(String configType) {
         AlertConfig alertConfig = alertConfigRepository.find("type", configType).firstResult();
         if (alertConfig == null || !alertConfig.isState()) return;
@@ -49,8 +55,10 @@ public class AlertMonitorService {
         List<Order> delayedOrders;
         if (configType.equals("DELAY_DEPARTURE")) {
             delayedOrders = orderRepository.findPendingOrdersOlderThan(limitTime);
-        } else {
+        } else if (configType.equals("DELAY_DELIVERY")) {
             delayedOrders = orderRepository.findInTransitOrdersOlderThan(limitTime);
+        } else {
+            delayedOrders = orderRepository.findOrdersWithLostGps(limitTime);
         }
 
         for (Order order : delayedOrders) {
