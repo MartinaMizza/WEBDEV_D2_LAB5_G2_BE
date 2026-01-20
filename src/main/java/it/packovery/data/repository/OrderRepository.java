@@ -69,4 +69,8 @@ public class OrderRepository implements PanacheRepository<Order> {
                         "id IN (SELECT mg.order.id FROM MapAndGps mg WHERE mg.positionTimestamp < ?1)",
                 timeout).list();
     }
+
+    public List<Order> findInTransitOrders() {
+        return find("CAST(orderStatus as String) IN ('SHIPPED', 'IN_TRANSIT')").list();
+    }
 }
