@@ -8,6 +8,8 @@ import it.packovery.data.model.login.Login;
 import it.packovery.data.repository.LoginRepository;
 import it.packovery.data.repository.PasswordResetTokenRepository;
 import it.packovery.service.exception.*;
+import it.packovery.web.model.LoginResponse;
+import it.packovery.web.model.NewPasswordRequest;
 import it.packovery.web.model.OtpVerificationRequest;
 import it.packovery.web.model.PasswordResetRequest;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -33,7 +35,7 @@ public class PasswordResetService {
         this.mailer = mailer;
     }
 
-    public void processPasswordResetRequest(PasswordResetRequest passwordResetRequest) {
+    public LoginResponse processPasswordResetRequest(PasswordResetRequest passwordResetRequest) {
         Login login = loginRepository.findByEmail(passwordResetRequest.getEmail());
 
         if (login == null) {
@@ -63,6 +65,8 @@ public class PasswordResetService {
         catch (RuntimeException e) {
             throw new EmailSendingException("Failed to send otp due to server error", e);
         }
+
+        return toLoginResponse(login);
     }
 
     public void processOtpVerificationRequest(OtpVerificationRequest otpVerificationRequest) {
@@ -86,14 +90,26 @@ public class PasswordResetService {
             throw new InvalidOtpException("OTP is not valid");
         }
 
-        login.setPassword(BcryptUtil.bcryptHash(otpVerificationRequest.getNewPassword()));
-
         try {
             passwordResetTokenRepository.delete(token);
         }
         catch (PersistenceException e) {
             throw new PasswordResetTokenDeletionException("Failed to delete otp token due to server error", e);
         }
+    }
+
+    public void resetPassword(NewPasswordRequest newPasswordRequest) {
+        Login login = loginRepository.findByEmail(newPasswordRequest.getEmail());
+
+        if (login == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        if (!newPasswordRequest.getNewPassword().equals(newPasswordRequest.getPasswordConfirm())) {
+            throw new UnmatchingPasswordsException("Passwords do not match");
+        }
+
+        login.setPassword(BcryptUtil.bcryptHash(newPasswordRequest.getNewPassword()));
 
         try {
             loginRepository.persist(login);
@@ -101,7 +117,6 @@ public class PasswordResetService {
         catch (PersistenceException e) {
             throw new PasswordUpdateException("Failed to update password due to server error", e);
         }
-
     }
 
     public String generateOtp() {
@@ -121,6 +136,15 @@ public class PasswordResetService {
                         "Reset password",
                         "Il tuo codice OTP è: " + otp + "\nValido per 5 minuti."
                 )
+        );
+    }
+
+    private static LoginResponse toLoginResponse(Login login) {
+        return new LoginResponse(
+                login.getId(),
+                login.getEmail(),
+                login.getRole().name(),
+                login.isAccountStatus()
         );
     }
 }
