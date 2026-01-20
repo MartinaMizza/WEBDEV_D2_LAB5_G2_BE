@@ -7,6 +7,7 @@ import io.quarkus.panache.common.Sort;
 import it.packovery.data.model.Order;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,5 +54,19 @@ public class OrderRepository implements PanacheRepository<Order> {
             return findAll(sortBy).page(Page.of(page, offset)).list();
         }
 
+    }
+
+    public List<Order> findPendingOrdersOlderThan(OffsetDateTime limitTime) {
+        return find("CAST(orderStatus as String) = 'PENDING' AND plannedDeliveryTime < ?1", limitTime).list();
+    }
+
+    public List<Order> findInTransitOrdersOlderThan(OffsetDateTime limitTime) {
+        return find("CAST(orderStatus as String) IN ('SHIPPED', 'IN_TRANSIT') AND plannedDeliveryTime < ?1", limitTime).list();
+    }
+
+    public List<Order> findOrdersWithLostGps(OffsetDateTime timeout) {
+        return find("CAST(orderStatus as String) IN ('SHIPPED', 'IN_TRANSIT') AND " +
+                        "id IN (SELECT mg.order.id FROM MapAndGps mg WHERE mg.positionTimestamp < ?1)",
+                timeout).list();
     }
 }
