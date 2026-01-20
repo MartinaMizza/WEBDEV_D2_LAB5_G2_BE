@@ -41,4 +41,14 @@ public class AlertResource {
         }
         return Response.status(Response.Status.BAD_REQUEST).build();
     }
+
+    @PUT
+    @Path("/automatic/resolve")
+    public Response automaticResolveAlert() {
+        if(alertService.automaticResolveAlert()){
+            return Response.ok("Alert automatically resolved.").build();
+        }
+        return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+
 }

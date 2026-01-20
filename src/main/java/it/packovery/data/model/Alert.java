@@ -1,6 +1,7 @@
 package it.packovery.data.model;
 
 import it.packovery.data.model.enumModel.AlertStatus;
+import it.packovery.data.model.enumModel.AlertType;
 import it.packovery.data.model.enumModel.IssueResolution;
 import it.packovery.data.model.login.Login;
 import jakarta.persistence.*;
@@ -51,10 +52,11 @@ public class Alert {
     )
     private Login resolvedBy;
 
-    @Column(name = "type_alert", nullable = false)
-    private String typeAlert;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type_alert", nullable = false, columnDefinition = "type_alert_enum")
+    private AlertType typeAlert;
 
-    public Alert(Long id, AlertStatus status, IssueResolution issueResolution, OffsetDateTime issueCreationTime, Order relatedOrder, OffsetDateTime createdTime, OffsetDateTime resolvedTime, String resolutionDescription, Login resolvedBy, String typeAlert) {
+    public Alert(Long id, AlertStatus status, IssueResolution issueResolution, OffsetDateTime issueCreationTime, Order relatedOrder, OffsetDateTime createdTime, OffsetDateTime resolvedTime, String resolutionDescription, Login resolvedBy, AlertType typeAlert) {
         this.id = id;
         this.status = status;
         this.issueResolution = issueResolution;
@@ -141,9 +143,9 @@ public class Alert {
         this.resolvedBy = resolvedBy;
     }
 
-    public String getTypeAlert() { return typeAlert;}
+    public AlertType getTypeAlert() { return typeAlert;}
 
-    public void setTypeAlert(String typeAlert) { this.typeAlert = typeAlert;}
+    public void setTypeAlert(AlertType typeAlert) { this.typeAlert = typeAlert;}
 }
 
 

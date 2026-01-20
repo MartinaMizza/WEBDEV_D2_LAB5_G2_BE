@@ -1,6 +1,7 @@
 package it.packovery.web.model.exception;
 
 import it.packovery.data.model.Order;
+import it.packovery.data.model.enumModel.AlertType;
 import it.packovery.data.model.enumModel.IssueResolution;
 
 import java.time.OffsetDateTime;
@@ -9,10 +10,10 @@ public class AlertResponse {
 
     private Long id;
     private Order idOrder;
-    private String typeAlert;
+    private AlertType typeAlert;
     private OffsetDateTime createdTime;
 
-    public AlertResponse(Long id, Order idOrder, String typeAlert, OffsetDateTime createdTime) {
+    public AlertResponse(Long id, Order idOrder, AlertType typeAlert, OffsetDateTime createdTime) {
         this.id = id;
         this.idOrder = idOrder;
         this.typeAlert = typeAlert;
@@ -35,11 +36,11 @@ public class AlertResponse {
         this.idOrder = idOrder;
     }
 
-    public String getTypeAlert() {
+    public AlertType getTypeAlert() {
         return typeAlert;
     }
 
-    public void setTypeAlert(String typeAlert) {
+    public void setTypeAlert(AlertType typeAlert) {
         this.typeAlert = typeAlert;
     }
 
