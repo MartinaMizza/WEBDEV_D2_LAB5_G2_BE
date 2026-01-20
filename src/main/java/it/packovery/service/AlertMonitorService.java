@@ -5,9 +5,11 @@ import it.packovery.data.model.Alert;
 import it.packovery.data.model.AlertConfig;
 import it.packovery.data.model.Order;
 import it.packovery.data.model.enumModel.AlertStatus;
+import it.packovery.data.model.enumModel.AlertType;
 import it.packovery.data.model.enumModel.IssueResolution;
 import it.packovery.data.repository.AlertConfigRepository;
 import it.packovery.data.repository.AlertRepository;
+import it.packovery.data.repository.MapAndGpsRepository;
 import it.packovery.data.repository.OrderRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -20,11 +22,13 @@ public class AlertMonitorService {
     private final OrderRepository orderRepository;
     private final AlertRepository alertRepository;
     private final AlertConfigRepository alertConfigRepository;
+    private final MapAndGpsRepository mapAndGpsRepository;
 
-    public AlertMonitorService(OrderRepository orderRepository, AlertRepository alertRepository, AlertConfigRepository alertConfigRepository) {
+    public AlertMonitorService(OrderRepository orderRepository, AlertRepository alertRepository, AlertConfigRepository alertConfigRepository, MapAndGpsRepository mapAndGpsRepository) {
         this.orderRepository = orderRepository;
         this.alertRepository = alertRepository;
         this.alertConfigRepository = alertConfigRepository;
+        this.mapAndGpsRepository = mapAndGpsRepository;
     }
 
     @Scheduled(every = "1m")
@@ -62,7 +66,9 @@ public class AlertMonitorService {
         }
 
         for (Order order : delayedOrders) {
-            if (!alertRepository.existsActiveAlert(order.getId(), alertConfig.getType())) {
+            AlertType alertType = AlertType.valueOf(alertConfig.getType());
+
+            if (!alertRepository.existsActiveAlert(order.getId(), alertType)) {
                 createAlert(order, alertConfig);
             }
         }
@@ -74,7 +80,7 @@ public class AlertMonitorService {
         alert.setStatus(AlertStatus.MEDIUM);
         alert.setIssueResolution(IssueResolution.PENDING);
         alert.setIssueCreationTime(OffsetDateTime.now());
-        alert.setTypeAlert(alertConfig.getType());
+        alert.setTypeAlert(AlertType.valueOf(alertConfig.getType()));
         alert.setResolutionDescription("Generato automaticamente: " + alertConfig.getDescription());
 
         alertRepository.persist(alert);
