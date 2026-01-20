@@ -9,6 +9,7 @@ import it.packovery.service.exception.NotFoundException;
 import it.packovery.web.model.AlertConfigResponse;
 import it.packovery.web.model.CreateAlertConfigRequest;
 import it.packovery.web.model.UpdateAlertConfigRequest;
+import it.packovery.web.model.UpdateStateAlertConfigRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
@@ -87,22 +88,6 @@ public class AlertConfigService {
             alertConfig.setId(updateAlertConfigRequest.getId());
         }
 
-        if (updateAlertConfigRequest.getType() != null && !updateAlertConfigRequest.getType().isBlank()
-                && !updateAlertConfigRequest.getType().equals(alertConfig.getType())
-        ) {
-            alertConfig.setType(updateAlertConfigRequest.getType());
-        }
-
-        if (updateAlertConfigRequest.getName() != null && !updateAlertConfigRequest.getName().isBlank()
-                && !updateAlertConfigRequest.getName().equals(alertConfig.getName())) {
-            alertConfig.setName(updateAlertConfigRequest.getName());
-        }
-
-        if (updateAlertConfigRequest.getDescription() != null && !updateAlertConfigRequest.getDescription().isBlank()
-                && !updateAlertConfigRequest.getDescription().equals(alertConfig.getDescription())) {
-            alertConfig.setDescription(updateAlertConfigRequest.getDescription());
-        }
-
         if (updateAlertConfigRequest.getThreshold() != null && !updateAlertConfigRequest.getThreshold().isBlank()
                 && !updateAlertConfigRequest.getThreshold().equals(alertConfig.getThreshold())) {
             alertConfig.setThreshold(updateAlertConfigRequest.getThreshold());
@@ -110,6 +95,35 @@ public class AlertConfigService {
 
         if (updateAlertConfigRequest.getState() != null && updateAlertConfigRequest.getState() != alertConfig.isState()) {
             alertConfig.setState(updateAlertConfigRequest.getState());
+        }
+
+        return toAlertConfigResponse(alertConfig);
+    }
+
+    @Transactional
+    public AlertConfigResponse updateStateAlertConfig(String id, UpdateStateAlertConfigRequest updateStateAlertConfigRequest) {
+        AlertConfig alertConfig = alertConfigRepository.findById(id);
+
+        if (alertConfig == null) {
+            throw new NotFoundException("Alert config with id: " + id + " not found");
+        }
+
+        if (updateStateAlertConfigRequest.getId() != null && !updateStateAlertConfigRequest.getId().isBlank()
+                && !updateStateAlertConfigRequest.getId().equals(alertConfig.getId())
+        ) {
+            AlertConfig alreadyExistingAlertConfig = alertConfigRepository.findById(updateStateAlertConfigRequest.getId());
+
+            if (alreadyExistingAlertConfig != null) {
+                throw new AlertConfigAlreadyExistsException(
+                        "Alert config with id: " + updateStateAlertConfigRequest.getId() + " already exists"
+                );
+            }
+
+            alertConfig.setId(updateStateAlertConfigRequest.getId());
+        }
+
+        if (updateStateAlertConfigRequest.getState() != null && updateStateAlertConfigRequest.getState() != alertConfig.isState()) {
+            alertConfig.setState(updateStateAlertConfigRequest.getState());
         }
 
         return toAlertConfigResponse(alertConfig);
