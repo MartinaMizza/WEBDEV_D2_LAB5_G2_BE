@@ -27,6 +27,15 @@ public class AlertService {
         this.loginRepository = loginRepository;
     }
 
+    public List<AlertResponse> getAlerts() {
+        List<Alert> alerts = alertRepository.findAll().list();
+        List<AlertResponse> alertResponses = new ArrayList<>();
+        for (Alert alert : alerts) {
+            alertResponses.add(toAlertResponse(alert));
+        }
+        return alertResponses;
+    }
+
     public List<AlertResponse> getPendingAlerts() {
         List<Alert> alertList = alertRepository.findPendingAlerts();
 

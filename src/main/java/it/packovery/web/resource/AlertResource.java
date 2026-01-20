@@ -22,6 +22,11 @@ public class AlertResource {
     }
 
     @GET
+    public List<AlertResponse> getAlerts() {
+        return alertService.getAlerts();
+    }
+
+    @GET
     @Path("/pending")
     public List<AlertResponse> getPendingAlerts() {
         return alertService.getPendingAlerts();
