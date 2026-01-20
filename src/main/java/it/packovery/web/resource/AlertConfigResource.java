@@ -32,6 +32,7 @@ public class AlertConfigResource {
     }
 
     @POST
+    @Path("/create")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed({"access_token"})
@@ -42,7 +43,7 @@ public class AlertConfigResource {
     }
 
     @PUT
-    @Path("/{id}")
+    @Path("/modify/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed({"access_token"})
@@ -56,7 +57,7 @@ public class AlertConfigResource {
     }
 
     @DELETE
-    @Path("/{id}")
+    @Path("/delete/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed({"access_token"})

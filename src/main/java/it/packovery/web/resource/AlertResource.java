@@ -4,6 +4,7 @@ import it.packovery.data.model.Alert;
 import it.packovery.service.AlertService;
 import it.packovery.web.model.exception.AlertResponse;
 import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -21,24 +22,29 @@ public class AlertResource {
         this.alertService = alertService;
     }
 
+
     @GET
+    @RolesAllowed({"access_token"})
     public List<AlertResponse> getAlerts() {
         return alertService.getAlerts();
     }
 
     @GET
+    @RolesAllowed({"access_token"})
     @Path("/pending")
     public List<AlertResponse> getPendingAlerts() {
         return alertService.getPendingAlerts();
     }
 
     @GET
+    @RolesAllowed({"access_token"})
     @Path("/{id}")
     public AlertResponse getAlert(@PathParam("id") Long id) {
         return alertService.getAlertById(id);
     }
 
     @PUT
+    @RolesAllowed({"access_token"})
     @Path("/resolve/{id}")
     public Response resolveAlert(@PathParam("id") Long id, Alert alert) {
         if(alertService.resolveAlert(id, alert)){
@@ -48,6 +54,7 @@ public class AlertResource {
     }
 
     @PUT
+    @RolesAllowed({"access_token"})
     @Path("/automatic/resolve")
     public Response automaticResolveAlert() {
         if(alertService.automaticResolveAlert()){
