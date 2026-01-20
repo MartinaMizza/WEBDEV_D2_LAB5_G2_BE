@@ -8,6 +8,7 @@ import it.packovery.data.model.login.Login;
 import it.packovery.data.repository.LoginRepository;
 import it.packovery.data.repository.PasswordResetTokenRepository;
 import it.packovery.service.exception.*;
+import it.packovery.web.model.LoginResponse;
 import it.packovery.web.model.NewPasswordRequest;
 import it.packovery.web.model.OtpVerificationRequest;
 import it.packovery.web.model.PasswordResetRequest;
@@ -34,7 +35,7 @@ public class PasswordResetService {
         this.mailer = mailer;
     }
 
-    public void processPasswordResetRequest(PasswordResetRequest passwordResetRequest) {
+    public LoginResponse processPasswordResetRequest(PasswordResetRequest passwordResetRequest) {
         Login login = loginRepository.findByEmail(passwordResetRequest.getEmail());
 
         if (login == null) {
@@ -64,6 +65,8 @@ public class PasswordResetService {
         catch (RuntimeException e) {
             throw new EmailSendingException("Failed to send otp due to server error", e);
         }
+
+        return toLoginResponse(login);
     }
 
     public void processOtpVerificationRequest(OtpVerificationRequest otpVerificationRequest) {
@@ -133,6 +136,15 @@ public class PasswordResetService {
                         "Reset password",
                         "Il tuo codice OTP è: " + otp + "\nValido per 5 minuti."
                 )
+        );
+    }
+
+    private static LoginResponse toLoginResponse(Login login) {
+        return new LoginResponse(
+                login.getId(),
+                login.getEmail(),
+                login.getRole().name(),
+                login.isAccountStatus()
         );
     }
 }
