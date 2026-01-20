@@ -6,9 +6,6 @@ import it.packovery.service.exception.*;
 import it.packovery.web.model.LoginResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-
 @ApplicationScoped
 public class LoginService {
 

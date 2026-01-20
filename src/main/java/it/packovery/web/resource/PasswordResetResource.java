@@ -1,6 +1,7 @@
 package it.packovery.web.resource;
 
 import it.packovery.service.PasswordResetService;
+import it.packovery.web.model.NewPasswordRequest;
 import it.packovery.web.model.OtpVerificationRequest;
 import it.packovery.web.model.PasswordResetRequest;
 import jakarta.annotation.security.DenyAll;
@@ -36,6 +37,16 @@ public class PasswordResetResource {
     @Transactional
     public Response confirmReset(OtpVerificationRequest otpVerificationRequest) {
         passwordResetService.processOtpVerificationRequest(otpVerificationRequest);
+
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/reset")
+    @PermitAll
+    @Transactional
+    public Response confirmReset(NewPasswordRequest newPasswordRequest) {
+        passwordResetService.resetPassword(newPasswordRequest);
 
         return Response.ok().build();
     }

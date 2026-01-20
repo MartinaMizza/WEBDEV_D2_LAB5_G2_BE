@@ -8,6 +8,7 @@ import it.packovery.data.model.login.Login;
 import it.packovery.data.repository.LoginRepository;
 import it.packovery.data.repository.PasswordResetTokenRepository;
 import it.packovery.service.exception.*;
+import it.packovery.web.model.NewPasswordRequest;
 import it.packovery.web.model.OtpVerificationRequest;
 import it.packovery.web.model.PasswordResetRequest;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -86,14 +87,26 @@ public class PasswordResetService {
             throw new InvalidOtpException("OTP is not valid");
         }
 
-        login.setPassword(BcryptUtil.bcryptHash(otpVerificationRequest.getNewPassword()));
-
         try {
             passwordResetTokenRepository.delete(token);
         }
         catch (PersistenceException e) {
             throw new PasswordResetTokenDeletionException("Failed to delete otp token due to server error", e);
         }
+    }
+
+    public void resetPassword(NewPasswordRequest newPasswordRequest) {
+        Login login = loginRepository.findByEmail(newPasswordRequest.getEmail());
+
+        if (login == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        if (!newPasswordRequest.getNewPassword().equals(newPasswordRequest.getPasswordConfirm())) {
+            throw new UnmatchingPasswordsException("Passwords do not match");
+        }
+
+        login.setPassword(BcryptUtil.bcryptHash(newPasswordRequest.getNewPassword()));
 
         try {
             loginRepository.persist(login);
@@ -101,7 +114,6 @@ public class PasswordResetService {
         catch (PersistenceException e) {
             throw new PasswordUpdateException("Failed to update password due to server error", e);
         }
-
     }
 
     public String generateOtp() {
