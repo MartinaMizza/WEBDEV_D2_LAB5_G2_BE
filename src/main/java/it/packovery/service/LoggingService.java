@@ -1,6 +1,8 @@
 package it.packovery.service;
 
 import it.packovery.data.model.Logging;
+import it.packovery.data.model.enumModel.ActionType;
+import it.packovery.data.model.enumModel.EntityViewed;
 import it.packovery.data.repository.LoggingRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -18,10 +20,9 @@ public class LoggingService {
 
     public void logAccess(Long userId, String azione, String note) {
         Logging log = new Logging();
-        log.setEntityViewed("ORDER_DETAIL");
-        log.setActionType(azione);
+        log.setEntityViewed(EntityViewed.valueOf("ORDER_DETAIL"));
+        log.setActionType(ActionType.valueOf(azione));
         log.setEventTimestamp(OffsetDateTime.from(LocalDateTime.now()));
-        log.note = note;
 
         loggingRepository.persist(log);
     }
