@@ -106,7 +106,6 @@ public class AlertMonitorService {
         alert.setIssueResolution(IssueResolution.PENDING);
         alert.setIssueCreationTime(OffsetDateTime.now());
         alert.setTypeAlert(AlertType.valueOf(alertConfig.getType()));
-        alert.setResolutionDescription("Generato automaticamente: " + alertConfig.getDescription());
 
         alertRepository.persist(alert);
     }

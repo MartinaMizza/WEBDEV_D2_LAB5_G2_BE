@@ -41,7 +41,7 @@ public class Alert {
     @Column(name = "resolved_time")
     private OffsetDateTime resolvedTime;
 
-    @Column(name = "resolution_description", nullable = false)
+    @Column(name = "resolution_description")
     private String resolutionDescription;
 
     @ManyToOne
