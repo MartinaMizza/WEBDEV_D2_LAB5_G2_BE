@@ -59,6 +59,7 @@ jobs:
         with:
           app-name: 'g2-packovery-be'
           slot-name: 'Production'
-          package: '*.jar'
+          package: .
 
           
+
