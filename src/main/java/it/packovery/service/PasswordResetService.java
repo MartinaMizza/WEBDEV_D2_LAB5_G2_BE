@@ -61,7 +61,7 @@ public class PasswordResetService {
             sendOtp(passwordResetRequest.getEmail(), otp);
         }
         catch (RuntimeException e) {
-            throw new OtpSendingException("Failed to send otp due to server error", e);
+            throw new EmailSendingException("Failed to send otp due to server error", e);
         }
     }
 
