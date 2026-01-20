@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "login")
+@Table(name = "logins")
 public class Login {
 
     @Id
@@ -15,7 +15,7 @@ public class Login {
     @Column(name = "email", nullable = false)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password")
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -34,9 +34,13 @@ public class Login {
     @Column(name = "permanently_blocked", nullable = false)
     private boolean permanentlyBlocked = false;
 
+    @Column(name = "is_system", columnDefinition = "boolean default false")
+    private boolean system = false;
+
+
     public Login() {}
 
-    public Login(String email, String password, Role role, boolean accountStatus, int failedAttempts, OffsetDateTime blockedUntil, boolean permanentlyBlocked) {
+    public Login(String email, String password, Role role, boolean accountStatus, int failedAttempts, OffsetDateTime blockedUntil, boolean permanentlyBlocked, boolean system) {
         this.email = email;
         this.password = password;
         this.role = role;
@@ -44,6 +48,7 @@ public class Login {
         this.failedAttempts = failedAttempts;
         this.blockedUntil = blockedUntil;
         this.permanentlyBlocked = permanentlyBlocked;
+        this.system = system;
     }
 
     public Long getId() {
@@ -109,4 +114,8 @@ public class Login {
     public void setPermanentlyBlocked(boolean permanentlyBlocked) {
         this.permanentlyBlocked = permanentlyBlocked;
     }
+
+    public boolean isSystem() { return system;}
+
+    public void setSystem(boolean system) { this.system = system;}
 }
