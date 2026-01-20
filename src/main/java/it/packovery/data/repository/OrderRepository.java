@@ -15,8 +15,16 @@ import java.util.Map;
 @ApplicationScoped
 public class OrderRepository implements PanacheRepository<Order> {
 
-    public List<Order> findOrders(Map<String, Object> filters, int page, int offset) {
-        Sort sortBy = Sort.by("createdAt").descending();
+    public List<Order> findOrders(
+            Map<String, Object> filters,
+            String sortingElement,
+            String sortingDirection,
+            int page,
+            int offset
+    ) {
+        Sort sortBy = sortingDirection.equalsIgnoreCase("asc")
+                ? Sort.by(sortingElement).ascending()
+                : Sort.by(sortingElement).descending();
 
         if (filters != null && !filters.isEmpty()) {
             List<String> conditions = new ArrayList<>();
@@ -35,6 +43,18 @@ public class OrderRepository implements PanacheRepository<Order> {
                     case "createdAtTo" -> {
                         conditions.add("createdAt < :createdAtTo");
                         params.and("createdAtTo", value);
+                    }
+
+                    case "pickupLocation" -> {
+                        String pickupLocation = value.toString().trim();
+                        conditions.add("pickupLocation ILIKE :pickupLocation");
+                        params.and("pickupLocation", "%" + pickupLocation + "%");
+                    }
+
+                    case "deliveryLocation" -> {
+                        String deliveryLocation = value.toString().trim();
+                        conditions.add("deliveryLocation ILIKE :deliveryLocation");
+                        params.and("deliveryLocation", "%" + deliveryLocation + "%");
                     }
 
                     default -> {

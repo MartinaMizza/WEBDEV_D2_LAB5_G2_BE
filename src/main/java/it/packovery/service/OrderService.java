@@ -26,8 +26,13 @@ public class OrderService {
         this.addressService = addressService;
     }
 
-    public List<OrderResponse> findOrders(Map<String, Object> filters, int page, int offset) {
-        List<Order> ordersList = orderRepository.findOrders(filters, page, offset);
+    public List<OrderResponse> findOrders(
+            Map<String, Object> filters,
+            String sortingElement,
+            String sortingDirection,
+            int page,
+            int offset) {
+        List<Order> ordersList = orderRepository.findOrders(filters, sortingElement, sortingDirection,  page, offset);
 
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (Order order : ordersList) {

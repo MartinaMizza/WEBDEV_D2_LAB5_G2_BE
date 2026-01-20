@@ -20,6 +20,7 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Path("/api/orders")
 @DenyAll
@@ -40,6 +41,8 @@ public class OrderResource {
     public Response findOrders(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("offset") @DefaultValue("7") int offset,
+            @QueryParam("sort") @DefaultValue("createdAt") String sortingElement,
+            @QueryParam("dir") @DefaultValue("desc") String sortingDirection,
             @QueryParam("id") int id,
             @QueryParam("status") String status,
             @QueryParam("pickup-location") String pickupLocation,
@@ -111,7 +114,15 @@ public class OrderResource {
             }
         }
 
-        List<OrderResponse> orderResponseList = orderService.findOrders(filters, page, offset);
+        Set<String> allowedSorts = Set.of(
+                "id",
+                "createdAt"
+        );
+        if (!allowedSorts.contains(sortingElement)) {
+            sortingElement = "createdAt";
+        }
+
+        List<OrderResponse> orderResponseList = orderService.findOrders(filters, sortingElement, sortingDirection, page, offset);
 
         return Response.ok(orderResponseList).build();
     }
