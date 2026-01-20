@@ -1,30 +1,28 @@
 package it.packovery.data.model;
 
 import io.quarkus.mongodb.panache.common.MongoEntity;
-import jakarta.persistence.Id;
+import it.packovery.data.model.enumModel.ActionType;
+import it.packovery.data.model.enumModel.EntityViewed;
 import org.bson.types.ObjectId;
 import java.time.OffsetDateTime;
 
-
-@MongoEntity(collection = "loggings")
+@MongoEntity(collection = "log_records")
 public class Logging {
-    public String note;
-    @Id
-    ObjectId id;
-    ObjectId userId;
-    ObjectId driverId;
-    String actionType;
-    String entityViewed;
-    OffsetDateTime eventTimestamp;
-    OffsetDateTime alertCreatedTime;
-    OffsetDateTime startTime;
-    OffsetDateTime endTime;
-    OffsetDateTime messageSentTime;
 
-    public Logging(ObjectId id, ObjectId userId, ObjectId driverId, String actionType, String entityViewed, OffsetDateTime eventTimestamp, OffsetDateTime alertCreatedTime, OffsetDateTime startTime, OffsetDateTime endTime, OffsetDateTime messageSentTime) {
-        this.id = id;
+    private ObjectId id;
+    private Long userId;
+    private ActionType actionType;
+    private EntityViewed entityViewed;
+    private OffsetDateTime eventTimestamp;
+    private OffsetDateTime alertCreatedTime;
+    private OffsetDateTime startTime;
+    private OffsetDateTime endTime;
+    private OffsetDateTime messageSentTime;
+
+    public Logging() {}
+
+    public Logging(Long userId, ActionType actionType, EntityViewed entityViewed, OffsetDateTime eventTimestamp, OffsetDateTime alertCreatedTime, OffsetDateTime startTime, OffsetDateTime endTime, OffsetDateTime messageSentTime) {
         this.userId = userId;
-        this.driverId = driverId;
         this.actionType = actionType;
         this.entityViewed = entityViewed;
         this.eventTimestamp = eventTimestamp;
@@ -34,8 +32,6 @@ public class Logging {
         this.messageSentTime = messageSentTime;
     }
 
-    public Logging() {}
-
     public ObjectId getId() {
         return id;
     }
@@ -44,35 +40,27 @@ public class Logging {
         this.id = id;
     }
 
-    public ObjectId getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(ObjectId userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
-    public ObjectId getDriverId() {
-        return driverId;
-    }
-
-    public void setDriverId(ObjectId driverId) {
-        this.driverId = driverId;
-    }
-
-    public String getActionType() {
+    public ActionType getActionType() {
         return actionType;
     }
 
-    public void setActionType(String actionType) {
+    public void setActionType(ActionType actionType) {
         this.actionType = actionType;
     }
 
-    public String getEntityViewed() {
+    public EntityViewed getEntityViewed() {
         return entityViewed;
     }
 
-    public void setEntityViewed(String entityViewed) {
+    public void setEntityViewed(EntityViewed entityViewed) {
         this.entityViewed = entityViewed;
     }
 

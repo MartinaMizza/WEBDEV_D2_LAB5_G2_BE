@@ -1,11 +1,10 @@
 package it.packovery.data.model;
 
-import io.quarkus.security.jpa.UserDefinition;
+import it.packovery.data.model.login.Login;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "message")
-@UserDefinition
+@Table(name = "messages")
 public class Message {
 
     @Id
@@ -20,11 +19,10 @@ public class Message {
     @JoinColumn(name = "rider_id")
     private User rider;
 
-    @Column(name = "message_content", nullable = false)
+    @Column(name = "message_content", columnDefinition = "TEXT", nullable = false)
     private String message;
 
-    public Message(Long id, Login sender, User rider, String message) {
-        this.id = id;
+    public Message(Login sender, User rider, String message) {
         this.sender = sender;
         this.rider = rider;
         this.message = message;

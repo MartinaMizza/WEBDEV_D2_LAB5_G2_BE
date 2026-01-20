@@ -1,6 +1,5 @@
 package it.packovery.data.model;
 
-import io.quarkus.security.jpa.UserDefinition;
 import it.packovery.data.model.enumModel.AlertStatus;
 import it.packovery.data.model.login.Login;
 import jakarta.persistence.*;
@@ -8,8 +7,7 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "alert")
-@UserDefinition
+@Table(name = "alerts")
 public class Alert {
 
     @Id
