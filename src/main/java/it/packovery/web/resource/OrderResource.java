@@ -4,6 +4,7 @@ import it.packovery.data.model.enumModel.OrderStatus;
 import it.packovery.data.model.enumModel.PackageSize;
 import it.packovery.data.model.enumModel.PackageWeight;
 import it.packovery.service.OrderService;
+import it.packovery.service.SecurityService;
 import it.packovery.web.model.OrderDetailsResponse;
 import it.packovery.web.model.OrderResponse;
 import jakarta.annotation.security.DenyAll;
@@ -11,6 +12,7 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -23,10 +25,13 @@ import java.util.Map;
 @DenyAll
 public class OrderResource {
 
+    private static final Logger LOG = Logger.getLogger(AlertConfigResource.class);
     private final OrderService orderService;
+    private final SecurityService securityService;
 
-    public OrderResource(OrderService orderService) {
+    public OrderResource(OrderService orderService, SecurityService securityService) {
         this.orderService = orderService;
+        this.securityService = securityService;
     }
 
     @GET
@@ -53,14 +58,20 @@ public class OrderResource {
                 filters.put("orderStatus", orderStatus);
             }
             catch (IllegalArgumentException e) {
+                LOG.warnf("SECURITY ALERT - Invalid OrderStatus value detected: [%s]", status);
+
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Invalid status value: " + status)
                         .build();
             }
         }
 
-        if (pickupLocation != null) filters.put("pickupLocation", pickupLocation);
-        if (deliveryLocation != null) filters.put("deliveryLocation", deliveryLocation);
+        if (pickupLocation != null) {
+            filters.put("pickupLocation", securityService.sanitize(pickupLocation));
+        }
+        if (deliveryLocation != null) {
+            filters.put("deliveryLocation", securityService.sanitize(deliveryLocation));
+        }
 
         if (createdAt != null) {
             LocalDate date = LocalDate.parse(createdAt);
@@ -78,6 +89,8 @@ public class OrderResource {
                 filters.put("packageWeight", packageWeight);
             }
             catch (IllegalArgumentException e) {
+                LOG.warnf("SECURITY ALERT - Invalid PackageWeight value received: [%s]", weight);
+
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Invalid package weight value: " + weight)
                         .build();
@@ -90,6 +103,8 @@ public class OrderResource {
                 filters.put("packageSize", packageSize);
             }
             catch (IllegalArgumentException e) {
+                LOG.warnf("SECURITY ALERT - Invalid PackageSize value received: [%s]", size);
+
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Invalid package size value: " + size)
                         .build();
