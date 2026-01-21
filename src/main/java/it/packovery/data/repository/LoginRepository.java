@@ -7,9 +7,11 @@ import it.packovery.data.model.login.Login;
 import it.packovery.service.exception.AccountPermanentlyBlockedException;
 import it.packovery.service.exception.AccountTemporarilyBlockedException;
 import it.packovery.service.exception.GenericException;
+import it.packovery.web.resource.LoginResource;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
+import org.jboss.logging.Logger;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -20,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 @ApplicationScoped
 public class LoginRepository implements PanacheRepository<Login> {
 
+    private static final Logger LOG = Logger.getLogger(LoginResource.class);
     private final LoggingRepository loggingRepository;
 
     public LoginRepository(LoggingRepository loggingRepository) {
@@ -82,10 +85,17 @@ public class LoginRepository implements PanacheRepository<Login> {
         login.setFailedAttempts(login.getFailedAttempts() + 1);
 
         switch (login.getFailedAttempts()) {
-            case 3 -> login.setBlockedUntil(OffsetDateTime.now().plusMinutes(30));
-            case 5 -> login.setBlockedUntil(OffsetDateTime.now().plusHours(1));
+            case 3 -> {
+                LOG.warnf("SECURITY EVENT - Temporarily blocked user with email: [%s]", login.getEmail());
+                login.setBlockedUntil(OffsetDateTime.now().plusMinutes(30));
+            }
+            case 5 -> {
+                LOG.warnf("SECURITY EVENT - Temporarily blocked user with email: [%s]", login.getEmail());
+                login.setBlockedUntil(OffsetDateTime.now().plusHours(1));
+            }
             case 6 -> {
-                loggingRepository.createUserBlockedLogRecord(login.getId());
+                //loggingRepository.createUserBlockedLogRecord(login.getId());
+                LOG.warnf("SECURITY EVENT - Permanently blocked user with email: [%s]", login.getEmail());
                 login.setPermanentlyBlocked(true);
             }
         }

@@ -153,12 +153,13 @@ public class OrderResource {
             @Context SecurityContext securityContext
     ) {
         String userEmail = securityContext.getUserPrincipal().getName();
-        OrderDetailsResponse orderDetailsResponse = orderService.getDetailedOrderById(id, email);
+        OrderDetailsResponse orderDetailsResponse = orderService.getDetailedOrderById(id, userEmail);
 
         String orderStatus;
         if (orderDetailsResponse != null) {
             orderStatus = orderDetailsResponse.getOrderStatus();
-        } else {
+        }
+        else {
             orderStatus = "NOT FOUND";
         }
 

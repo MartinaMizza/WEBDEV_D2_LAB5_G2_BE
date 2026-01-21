@@ -47,11 +47,13 @@ public class LoginResource {
                 String accessToken = getAccessToken(user);
                 String refreshToken = getRefreshToken(user);
                 return Response.ok(new TokenResponse(accessToken, refreshToken)).build();
-            } else {
+            }
+            else {
                 LOG.warnf("SECURITY EVENT - Failed login attempt for user: [%s]", request.getEmail());
                 return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             LOG.errorf("SECURITY EVENT - Authentication error for user [%s]: %s", request.getEmail(), e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();

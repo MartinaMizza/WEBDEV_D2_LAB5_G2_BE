@@ -25,7 +25,7 @@ public class LoginService {
             throw new InvalidCredentialsException("Email or password are incorrect");
         }
 
-        loggingRepository.createLoginLogRecord(login.getId());
+        //loggingRepository.createLoginLogRecord(login.getId());
         return toLoginResponse(login);
     }
 

@@ -75,12 +75,12 @@ public class OrderService {
             throw new NotFoundException("User not found");
         }
 
-        if (order.getOrderStatus() == OrderStatus.DELIVERED)    {
-            loggingRepository.createViewedClosedOrderLogRecord(login.getId());
-        }
-        else {
-            loggingRepository.createViewedOpenOrderLogRecord(login.getId());
-        }
+//        if (order.getOrderStatus() == OrderStatus.DELIVERED)    {
+//            loggingRepository.createViewedClosedOrderLogRecord(login.getId());
+//        }
+//        else {
+//            loggingRepository.createViewedOpenOrderLogRecord(login.getId());
+//        }
 
         Route pickupDeliveryRoute = routingService.createRoute(
                 order.getMapAndGps().getPickupLongitude(),
