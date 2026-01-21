@@ -1,6 +1,7 @@
 package it.packovery.service;
 
 import it.packovery.data.model.login.Login;
+import it.packovery.data.repository.LoggingRepository;
 import it.packovery.data.repository.LoginRepository;
 import it.packovery.service.exception.*;
 import it.packovery.web.model.LoginResponse;
@@ -10,9 +11,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class LoginService {
 
     private final LoginRepository loginRepository;
+    private final LoggingRepository loggingRepository;
 
-    public LoginService(LoginRepository loginRepository) {
+    public LoginService(LoginRepository loginRepository, LoggingRepository loggingRepository) {
         this.loginRepository = loginRepository;
+        this.loggingRepository = loggingRepository;
     }
 
     public LoginResponse authenticate(String email, String password) {
@@ -22,6 +25,7 @@ public class LoginService {
             throw new InvalidCredentialsException("Email or password are incorrect");
         }
 
+        loggingRepository.createLoginLogRecord(login.getId());
         return toLoginResponse(login);
     }
 

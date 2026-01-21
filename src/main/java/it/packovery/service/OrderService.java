@@ -2,6 +2,10 @@ package it.packovery.service;
 
 import it.packovery.data.model.Order;
 
+import it.packovery.data.model.enumModel.OrderStatus;
+import it.packovery.data.model.login.Login;
+import it.packovery.data.repository.LoggingRepository;
+import it.packovery.data.repository.LoginRepository;
 import it.packovery.data.repository.OrderRepository;
 import it.packovery.service.exception.NotFoundException;
 import it.packovery.service.model.Route;
@@ -17,11 +21,21 @@ import java.util.Map;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final LoginRepository loginRepository;
+    private final LoggingRepository loggingRepository;
     private final RoutingService routingService;
     private final AddressService addressService;
 
-    public OrderService(OrderRepository orderRepository, RoutingService routingService, AddressService addressService) {
+    public OrderService(
+            OrderRepository orderRepository,
+            LoginRepository loginRepository,
+            LoggingRepository loggingRepository,
+            RoutingService routingService,
+            AddressService addressService
+    ) {
         this.orderRepository = orderRepository;
+        this.loginRepository = loginRepository;
+        this.loggingRepository = loggingRepository;
         this.routingService = routingService;
         this.addressService = addressService;
     }
@@ -48,11 +62,24 @@ public class OrderService {
         return orderResponseList;
     }
 
-    public OrderDetailsResponse getDetailedOrderById(Long orderId) {
+    public OrderDetailsResponse getDetailedOrderById(Long orderId, String userEmail) {
         Order order = orderRepository.findById(orderId);
 
         if (order == null) {
             throw new NotFoundException("Order not found");
+        }
+
+        Login login = loginRepository.findByEmail(userEmail);
+
+        if (login == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        if (order.getOrderStatus() == OrderStatus.DELIVERED)    {
+            loggingRepository.createViewedClosedOrderLogRecord(login.getId());
+        }
+        else {
+            loggingRepository.createViewedOpenOrderLogRecord(login.getId());
         }
 
         Route pickupDeliveryRoute = routingService.createRoute(

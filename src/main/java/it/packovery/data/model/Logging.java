@@ -4,7 +4,8 @@ import io.quarkus.mongodb.panache.common.MongoEntity;
 import it.packovery.data.model.enumModel.ActionType;
 import it.packovery.data.model.enumModel.EntityViewed;
 import org.bson.types.ObjectId;
-import java.time.OffsetDateTime;
+
+import java.time.Instant;
 
 @MongoEntity(collection = "log_records")
 public class Logging {
@@ -13,15 +14,15 @@ public class Logging {
     private Long userId;
     private ActionType actionType;
     private EntityViewed entityViewed;
-    private OffsetDateTime eventTimestamp;
-    private OffsetDateTime alertCreatedTime;
-    private OffsetDateTime startTime;
-    private OffsetDateTime endTime;
-    private OffsetDateTime messageSentTime;
+    private Instant eventTimestamp;
+    private Instant alertCreatedTime;
+    private Instant startTime;
+    private Instant endTime;
+    private Instant messageSentTime;
 
     public Logging() {}
 
-    public Logging(Long userId, ActionType actionType, EntityViewed entityViewed, OffsetDateTime eventTimestamp, OffsetDateTime alertCreatedTime, OffsetDateTime startTime, OffsetDateTime endTime, OffsetDateTime messageSentTime) {
+    public Logging(Long userId, ActionType actionType, EntityViewed entityViewed, Instant eventTimestamp, Instant alertCreatedTime, Instant startTime, Instant endTime, Instant messageSentTime) {
         this.userId = userId;
         this.actionType = actionType;
         this.entityViewed = entityViewed;
@@ -64,43 +65,43 @@ public class Logging {
         this.entityViewed = entityViewed;
     }
 
-    public OffsetDateTime getEventTimestamp() {
+    public Instant getEventTimestamp() {
         return eventTimestamp;
     }
 
-    public void setEventTimestamp(OffsetDateTime eventTimestamp) {
+    public void setEventTimestamp(Instant eventTimestamp) {
         this.eventTimestamp = eventTimestamp;
     }
 
-    public OffsetDateTime getAlertCreatedTime() {
+    public Instant getAlertCreatedTime() {
         return alertCreatedTime;
     }
 
-    public void setAlertCreatedTime(OffsetDateTime alertCreatedTime) {
+    public void setAlertCreatedTime(Instant alertCreatedTime) {
         this.alertCreatedTime = alertCreatedTime;
     }
 
-    public OffsetDateTime getStartTime() {
+    public Instant getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(OffsetDateTime startTime) {
+    public void setStartTime(Instant startTime) {
         this.startTime = startTime;
     }
 
-    public OffsetDateTime getEndTime() {
+    public Instant getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(OffsetDateTime endTime) {
+    public void setEndTime(Instant endTime) {
         this.endTime = endTime;
     }
 
-    public OffsetDateTime getMessageSentTime() {
+    public Instant getMessageSentTime() {
         return messageSentTime;
     }
 
-    public void setMessageSentTime(OffsetDateTime messageSentTime) {
+    public void setMessageSentTime(Instant messageSentTime) {
         this.messageSentTime = messageSentTime;
     }
 }

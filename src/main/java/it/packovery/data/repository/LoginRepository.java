@@ -20,27 +20,34 @@ import java.time.format.DateTimeFormatter;
 @ApplicationScoped
 public class LoginRepository implements PanacheRepository<Login> {
 
+    private final LoggingRepository loggingRepository;
+
+    public LoginRepository(LoggingRepository loggingRepository) {
+        this.loggingRepository = loggingRepository;
+    }
+
     @Transactional
     public Login authenticate(String email, String password) {
         Login userLogin = findByEmail(email);
+
         if (userLogin != null) {
+            OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+
+            if (userLogin.isPermanentlyBlocked()) {
+                throw new AccountPermanentlyBlockedException("Account permanently blocked. Contact support");
+            }
+
+            if (userLogin.getBlockedUntil() != null && userLogin.getBlockedUntil().isAfter(now)) {
+                ZonedDateTime localUnlockingDateTime = userLogin.getBlockedUntil().atZoneSameInstant(ZoneId.systemDefault());
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+                throw new AccountTemporarilyBlockedException(
+                        "Account blocked until " + localUnlockingDateTime.format(formatter)
+                );
+            }
+
             boolean matches = BcryptUtil.matches(password, userLogin.getPassword());
 
             if (matches) {
-                OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-
-                if (userLogin.isPermanentlyBlocked()) {
-                    throw new AccountPermanentlyBlockedException("Account permanently blocked. Contact support");
-                }
-
-                if (userLogin.getBlockedUntil() != null && userLogin.getBlockedUntil().isAfter(now)) {
-                    ZonedDateTime localUnlockingDateTime = userLogin.getBlockedUntil().atZoneSameInstant(ZoneId.systemDefault());
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-                    throw new AccountTemporarilyBlockedException(
-                            "Account blocked until " + localUnlockingDateTime.format(formatter)
-                    );
-                }
-
                 userLogin.setFailedAttempts(0);
                 userLogin.setBlockedUntil(null);
 
@@ -77,7 +84,10 @@ public class LoginRepository implements PanacheRepository<Login> {
         switch (login.getFailedAttempts()) {
             case 3 -> login.setBlockedUntil(OffsetDateTime.now().plusMinutes(30));
             case 5 -> login.setBlockedUntil(OffsetDateTime.now().plusHours(1));
-            case 6 -> login.setPermanentlyBlocked(true);
+            case 6 -> {
+                loggingRepository.createUserBlockedLogRecord(login.getId());
+                login.setPermanentlyBlocked(true);
+            }
         }
 
         try {

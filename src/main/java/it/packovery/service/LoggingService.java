@@ -3,9 +3,13 @@ package it.packovery.service;
 import it.packovery.data.model.Logging;
 import it.packovery.data.model.enumModel.ActionType;
 import it.packovery.data.model.enumModel.EntityViewed;
+import it.packovery.data.model.login.Login;
 import it.packovery.data.repository.LoggingRepository;
+import it.packovery.data.repository.LoginRepository;
+import it.packovery.service.exception.NotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
@@ -13,17 +17,20 @@ import java.time.OffsetDateTime;
 public class LoggingService {
 
     private final LoggingRepository loggingRepository;
+    private final LoginRepository loginRepository;
 
-    public LoggingService(LoggingRepository loggingRepository) {
+    public LoggingService(LoggingRepository loggingRepository, LoginRepository loginRepository) {
         this.loggingRepository = loggingRepository;
+        this.loginRepository = loginRepository;
     }
 
-    public void logAccess(Long userId, String azione, String note) {
-        Logging log = new Logging();
-        log.setEntityViewed(EntityViewed.valueOf("ORDER_DETAIL"));
-        log.setActionType(ActionType.valueOf(azione));
-        log.setEventTimestamp(OffsetDateTime.from(LocalDateTime.now()));
+    public void updateLogRecordsAtLogout(String email) {
+        Login login = loginRepository.findByEmail(email);
 
-        loggingRepository.persist(log);
+        if (login == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        loggingRepository.updateLogRecordsAtLogout(login.getId());
     }
 }
