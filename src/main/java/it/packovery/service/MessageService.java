@@ -4,6 +4,7 @@ import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import it.packovery.data.model.Message;
 import it.packovery.data.model.Order;
+import it.packovery.data.model.enumModel.OrderStatus;
 import it.packovery.data.model.login.Login;
 import it.packovery.data.repository.LoginRepository;
 import it.packovery.data.repository.MessageRepository;
@@ -46,6 +47,10 @@ public class MessageService {
         // Chiarire cosa voglia dire "preso in carico"
         if (order.getMapAndGps().getRider().getId() == null) {
             throw new SendMessageException("Order has no rider");
+        }
+
+        if (order.getOrderStatus().equals(OrderStatus.CANCELED) || order.getOrderStatus().equals(OrderStatus.DELIVERED)) {
+            throw new SendMessageException("Order is already delivered or canceled");
         }
 
         Login user = loginRepository.findByEmail(senderEmail);
