@@ -15,7 +15,7 @@ import org.jboss.logging.Logger;
 @Path("/api/message")
 public class MessageResource {
 
-    private static final Logger LOG = Logger.getLogger(AlertConfigResource.class);
+    private static final Logger LOG = Logger.getLogger(MessageResource.class);
     private final MessageService messageService;
 
     public MessageResource(MessageService messageService) {

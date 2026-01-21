@@ -28,7 +28,7 @@ import java.util.Set;
 @DenyAll
 public class OrderResource {
 
-    private static final Logger LOG = Logger.getLogger(AlertConfigResource.class);
+    private static final Logger LOG = Logger.getLogger(OrderResource.class);
     private final OrderService orderService;
     private final SecurityService securityService;
 

@@ -25,7 +25,7 @@ import java.util.Set;
 @Path("/api/auth")
 public class LoginResource {
 
-    private static final Logger LOG = Logger.getLogger(AlertConfigResource.class);
+    private static final Logger LOG = Logger.getLogger(LoginResource.class);
     private final LoginService loginService;
 
     public LoginResource(LoginService loginService) {
@@ -52,8 +52,10 @@ public class LoginResource {
                 return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
             }
         } catch (Exception e) {
+            e.printStackTrace();
             LOG.errorf("SECURITY EVENT - Authentication error for user [%s]: %s", request.getEmail(), e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+
         }
     }
 

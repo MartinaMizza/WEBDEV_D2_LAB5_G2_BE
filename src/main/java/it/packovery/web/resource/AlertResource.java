@@ -20,7 +20,7 @@ import java.util.List;
 @DenyAll
 public class AlertResource {
 
-    private static final Logger LOG = Logger.getLogger(AlertConfigResource.class);
+    private static final Logger LOG = Logger.getLogger(AlertResource.class);
     private final AlertService alertService;
 
     public AlertResource(final AlertService alertService) {

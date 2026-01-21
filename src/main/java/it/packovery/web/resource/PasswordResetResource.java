@@ -23,7 +23,7 @@ import java.util.Set;
 @Path("/api/auth/password-reset")
 public class PasswordResetResource {
 
-    private static final Logger LOG = Logger.getLogger(AlertConfigResource.class);
+    private static final Logger LOG = Logger.getLogger(PasswordResetResource.class);
     private final PasswordResetService passwordResetService;
 
     public PasswordResetResource(PasswordResetService orderService) {
