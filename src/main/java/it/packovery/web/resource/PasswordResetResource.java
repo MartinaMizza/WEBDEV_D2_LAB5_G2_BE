@@ -60,7 +60,7 @@ public class PasswordResetResource {
         String email = securityContext.getUserPrincipal().getName();
 
         try {
-            passwordResetService.processOtpVerificationRequest(otpVerificationRequest);
+            passwordResetService.processOtpVerificationRequest(email, otpVerificationRequest);
 
             LOG.infof("SECURITY EVENT - Password successfully reset for user: [%s]", email);
             return Response.ok().build();
@@ -83,7 +83,7 @@ public class PasswordResetResource {
         String email = securityContext.getUserPrincipal().getName();
 
         try {
-            passwordResetService.resetPassword(newPasswordRequest);
+            passwordResetService.resetPassword(email, newPasswordRequest);
 
             LOG.infof("SECURITY EVENT - User [%s] has successfully changed his password.", email);
 

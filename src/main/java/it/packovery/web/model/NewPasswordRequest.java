@@ -9,9 +9,6 @@ import jakarta.validation.constraints.Size;
 public class NewPasswordRequest {
 
     @JsonDeserialize(using= StringDeserializer.class)
-    private String email;
-
-    @JsonDeserialize(using= StringDeserializer.class)
     @NotBlank(message = "Password is required")
     @Size(min = 12, message = "Password must be at least 12 characters long")
     @Pattern(
@@ -22,14 +19,6 @@ public class NewPasswordRequest {
 
     @JsonDeserialize(using= StringDeserializer.class)
     private String passwordConfirm;
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 
     public String getNewPassword() {
         return newPassword;
