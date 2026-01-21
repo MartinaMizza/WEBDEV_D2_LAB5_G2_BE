@@ -53,7 +53,7 @@ public class Alert {
     private Login resolvedBy;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type_alert", nullable = false, columnDefinition = "type_alert_enum")
+    @Column(name = "alert_type", nullable = false, columnDefinition = "alert_type_enum")
     private AlertType typeAlert;
 
     public Alert(Long id, AlertStatus status, IssueResolution issueResolution, OffsetDateTime issueCreationTime, Order relatedOrder, OffsetDateTime createdTime, OffsetDateTime resolvedTime, String resolutionDescription, Login resolvedBy, AlertType typeAlert) {

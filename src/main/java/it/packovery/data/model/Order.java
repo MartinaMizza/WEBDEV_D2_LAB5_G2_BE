@@ -1,5 +1,6 @@
 package it.packovery.data.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import it.packovery.data.model.enumModel.*;
 import jakarta.persistence.*;
 
@@ -72,6 +73,7 @@ public class Order {
     private User user;
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, optional = false)
+    @JsonManagedReference
     public MapAndGps mapAndGps;
 
     public Order() {}

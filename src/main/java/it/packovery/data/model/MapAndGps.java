@@ -1,5 +1,7 @@
 package it.packovery.data.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
@@ -41,7 +43,8 @@ public class MapAndGps {
     private Double distanceTraveled;
 
     @OneToOne
-    @JoinColumn(name = "order_id", unique = true) // colonna FK in map_and_gps
+    @JoinColumn(name = "order_id", unique = true)
+    @JsonBackReference
     public Order order;
 
     public MapAndGps() {}

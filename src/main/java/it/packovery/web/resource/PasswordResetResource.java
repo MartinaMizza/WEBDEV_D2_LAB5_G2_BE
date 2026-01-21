@@ -9,8 +9,11 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.jwt.Claims;
+import org.jboss.logging.Logger;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -20,6 +23,7 @@ import java.util.Set;
 @Path("/api/auth/password-reset")
 public class PasswordResetResource {
 
+    private static final Logger LOG = Logger.getLogger(PasswordResetResource.class);
     private final PasswordResetService passwordResetService;
 
     public PasswordResetResource(PasswordResetService orderService) {
@@ -31,31 +35,66 @@ public class PasswordResetResource {
     @PermitAll
     @Transactional
     public Response requestReset(PasswordResetRequest passwordResetRequest) {
+        String email = passwordResetRequest.getEmail();
+
+        LOG.infof("SECURITY EVENT - Password reset requested for user: [%s]", email);
+
         LoginResponse loginResponse = passwordResetService.processPasswordResetRequest(passwordResetRequest);
 
-        String passwordResetToken = getPasswordResetToken(loginResponse);
-
-        return Response.ok(new PasswordResetTokenResponse(passwordResetToken)).build();
+        if (loginResponse != null) {
+            String passwordResetToken = getPasswordResetToken(loginResponse);
+            return Response.ok(new PasswordResetTokenResponse(passwordResetToken)).build();
+        } else {
+            LOG.warnf("SECURITY EVENT - Password reset failed: user [%s] does not exist", email);
+            return Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
+        }
     }
 
     @POST
     @Path("/confirm")
     @RolesAllowed({"password_reset_token"})
     @Transactional
-    public Response confirmReset(OtpVerificationRequest otpVerificationRequest) {
-        passwordResetService.processOtpVerificationRequest(otpVerificationRequest);
+    public Response confirmReset(@Context SecurityContext securityContext,
+                                 OtpVerificationRequest otpVerificationRequest
+    ) {
+        String email = securityContext.getUserPrincipal().getName();
 
-        return Response.ok().build();
+        try {
+            passwordResetService.processOtpVerificationRequest(otpVerificationRequest);
+
+            LOG.infof("SECURITY EVENT - Password successfully reset for user: [%s]", email);
+            return Response.ok().build();
+        } catch (Exception e) {
+            LOG.warnf("SECURITY EVENT - Failed password reset attempt (invalid OTP) for user: [%s]", email);
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid or expired OTP")
+                    .build();
+        }
     }
 
     @POST
     @Path("/reset")
     @RolesAllowed({"password_reset_token"})
     @Transactional
-    public Response confirmReset(NewPasswordRequest newPasswordRequest) {
-        passwordResetService.resetPassword(newPasswordRequest);
+    public Response confirmReset(@Context SecurityContext securityContext,
+                                 NewPasswordRequest newPasswordRequest
+    ) {
+        String email = securityContext.getUserPrincipal().getName();
 
-        return Response.ok().build();
+        try {
+            passwordResetService.resetPassword(newPasswordRequest);
+
+            LOG.infof("SECURITY EVENT - User [%s] has successfully changed his password.", email);
+
+            return Response.ok().build();
+        } catch (Exception e) {
+            LOG.errorf("SECURITY EVENT - Critical error during password reset for user [%s]: %s", email, e.getMessage());
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Could not reset password. Please try again.")
+                    .build();
+        }
     }
 
     private String getPasswordResetToken(LoginResponse loginResponse) {
