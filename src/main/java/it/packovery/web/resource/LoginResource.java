@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.jwt.Claims;
+import org.jboss.logging.Logger;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -24,6 +25,7 @@ import java.util.Set;
 @Path("/api/auth")
 public class LoginResource {
 
+    private static final Logger LOG = Logger.getLogger(AlertConfigResource.class);
     private final LoginService loginService;
 
     public LoginResource(LoginService loginService) {
@@ -36,12 +38,23 @@ public class LoginResource {
     @Produces(MediaType.APPLICATION_JSON)
     @PermitAll
     public Response login(LoginRequest request) {
-        LoginResponse user = loginService.authenticate(request.getEmail(), request.getPassword());
+        try {
+            LoginResponse user = loginService.authenticate(request.getEmail(), request.getPassword());
 
-        String accessToken = getAccessToken(user);
-        String refreshToken = getRefreshToken(user);
+            if (user != null) {
+                LOG.infof("SECURITY EVENT - Successful login for user: [%s]", request.getEmail());
 
-        return Response.ok(new TokenResponse(accessToken, refreshToken)).build();
+                String accessToken = getAccessToken(user);
+                String refreshToken = getRefreshToken(user);
+                return Response.ok(new TokenResponse(accessToken, refreshToken)).build();
+            } else {
+                LOG.warnf("SECURITY EVENT - Failed login attempt for user: [%s]", request.getEmail());
+                return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
+            }
+        } catch (Exception e) {
+            LOG.errorf("SECURITY EVENT - Authentication error for user [%s]: %s", request.getEmail(), e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @POST
@@ -52,7 +65,14 @@ public class LoginResource {
     public Response refresh(@Context SecurityContext securityContext) {
         String email = securityContext.getUserPrincipal().getName();
 
+        LOG.infof("SECURITY EVENT - Session refresh requested for user: [%s]", email);
+
         LoginResponse loginResponse = loginService.getLoginByEmail(email);
+
+        if (loginResponse == null) {
+            LOG.warnf("SECURITY EVENT - Refresh failed: user [%s] not found", email);
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
 
         String accessToken = getAccessToken(loginResponse);
         return Response.ok(new AccessTokenResponse(accessToken)).build();

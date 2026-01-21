@@ -10,8 +10,10 @@ import it.packovery.web.model.OrderResponse;
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
@@ -20,6 +22,7 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Path("/api/orders")
 @DenyAll
@@ -38,8 +41,11 @@ public class OrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"access_token"})
     public Response findOrders(
+            @Context SecurityContext securityContext,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("offset") @DefaultValue("7") int offset,
+            @QueryParam("sort") @DefaultValue("createdAt") String sortingElement,
+            @QueryParam("dir") @DefaultValue("desc") String sortingDirection,
             @QueryParam("id") int id,
             @QueryParam("status") String status,
             @QueryParam("pickup-location") String pickupLocation,
@@ -47,8 +53,18 @@ public class OrderResource {
             @QueryParam("created-at") String createdAt,
             @QueryParam("weight") String weight,
             @QueryParam("size") String size
-
     ) {
+        String userEmail = securityContext.getUserPrincipal().getName();
+        String orderType;
+        if (status != null) {
+            orderType = status.toUpperCase();
+        } else {
+            orderType = "ALL TYPES";
+        }
+
+        LOG.infof("SECURITY EVENT - User [%s] is accessing Orders list. Filtered by Status: [%s], Page: [%d]",
+                userEmail, orderType, page);
+
         Map<String, Object> filters = new HashMap<>();
         if (id != 0) filters.put("id", id);
 
@@ -58,7 +74,8 @@ public class OrderResource {
                 filters.put("orderStatus", orderStatus);
             }
             catch (IllegalArgumentException e) {
-                LOG.warnf("SECURITY ALERT - Invalid OrderStatus value detected: [%s]", status);
+                String sanitizedStatus = securityService.sanitize(status);
+                LOG.warnf("SECURITY ALERT - Invalid OrderStatus attempt by [%s]: [%s]", userEmail, sanitizedStatus);
 
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Invalid status value: " + status)
@@ -89,7 +106,8 @@ public class OrderResource {
                 filters.put("packageWeight", packageWeight);
             }
             catch (IllegalArgumentException e) {
-                LOG.warnf("SECURITY ALERT - Invalid PackageWeight value received: [%s]", weight);
+                String sanitizedWeight = securityService.sanitize(weight);
+                LOG.warnf("SECURITY ALERT - Invalid PackageWeight attempt by [%s]: [%s]", userEmail, sanitizedWeight);
 
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Invalid package weight value: " + weight)
@@ -103,7 +121,8 @@ public class OrderResource {
                 filters.put("packageSize", packageSize);
             }
             catch (IllegalArgumentException e) {
-                LOG.warnf("SECURITY ALERT - Invalid PackageSize value received: [%s]", size);
+                String sanitizedSize = securityService.sanitize(size);
+                LOG.warnf("SECURITY ALERT - Invalid PackageSize attempt by [%s]: [%s]", userEmail, sanitizedSize);
 
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Invalid package size value: " + size)
@@ -111,7 +130,16 @@ public class OrderResource {
             }
         }
 
-        List<OrderResponse> orderResponseList = orderService.findOrders(filters, page, offset);
+        Set<String> allowedSorts = Set.of(
+                "id",
+                "createdAt"
+        );
+        if (!allowedSorts.contains(sortingElement)) {
+            sortingElement = "createdAt";
+        }
+
+        String sanitizedSortingDirection = securityService.sanitize(sortingDirection);
+        List<OrderResponse> orderResponseList = orderService.findOrders(filters, sortingElement, sanitizedSortingDirection, page, offset);
 
         return Response.ok(orderResponseList).build();
     }
@@ -120,10 +148,22 @@ public class OrderResource {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"access_token"})
-    public Response getDetailedOrderById(@PathParam("id") long id) {
+    public Response getDetailedOrderById(@Context SecurityContext securityContext,
+                                         @PathParam("id") long id
+    ) {
+        String userEmail = securityContext.getUserPrincipal().getName();
         OrderDetailsResponse orderDetailsResponse = orderService.getDetailedOrderById(id);
+
+        String orderStatus;
+        if (orderDetailsResponse != null) {
+            orderStatus = orderDetailsResponse.getOrderStatus();
+        } else {
+            orderStatus = "NOT FOUND";
+        }
+
+        LOG.infof("SECURITY EVENT - User [%s] accessed Detailed Order ID: [%d]. Current Order Status: [%s]",
+                userEmail, id, orderStatus);
 
         return Response.ok(orderDetailsResponse).build();
     }
 }
-

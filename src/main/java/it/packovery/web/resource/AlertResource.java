@@ -9,7 +9,10 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
+import org.jboss.logging.Logger;
 
 import java.util.List;
 
@@ -17,7 +20,9 @@ import java.util.List;
 @DenyAll
 public class AlertResource {
 
+    private static final Logger LOG = Logger.getLogger(AlertConfigResource.class);
     private final AlertService alertService;
+
     public AlertResource(final AlertService alertService) {
         this.alertService = alertService;
     }
@@ -46,7 +51,13 @@ public class AlertResource {
     @PUT
     @RolesAllowed({"access_token"})
     @Path("/resolve/{id}")
-    public Response resolveAlert(@PathParam("id") Long id, Alert alert) {
+    public Response resolveAlert(@Context SecurityContext securityContext,
+                                 @PathParam("id") Long id, Alert alert
+    ) {
+        String userEmail = securityContext.getUserPrincipal().getName();
+
+        LOG.infof("SECURITY EVENT - User [%s] is resolving Alert ID: [%d]", userEmail, id);
+
         if(alertService.resolveAlert(id, alert)){
             return Response.ok("Alert resolved.").build();
         }
@@ -57,10 +68,14 @@ public class AlertResource {
     @RolesAllowed({"access_token"})
     @Path("/automatic/resolve")
     public Response automaticResolveAlert() {
+        LOG.infof("SECURITY EVENT - SYSTEM ACTION - Starting automatic alert resolution process");
+
         if(alertService.automaticResolveAlert()){
+            LOG.infof("SECURITY EVENT - SYSTEM ACTION - Automatic alert resolution completed successfully");
             return Response.ok("Alert automatically resolved.").build();
         }
+
+        LOG.errorf("SECURITY EVENT - SYSTEM ACTION - Automatic alert resolution failed");
         return Response.status(Response.Status.BAD_REQUEST).build();
     }
-
 }
