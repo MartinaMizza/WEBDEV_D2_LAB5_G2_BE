@@ -1,13 +1,17 @@
 package it.packovery.web.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class NewPasswordRequest {
 
+    @JsonDeserialize(using= StringDeserializer.class)
     private String email;
 
+    @JsonDeserialize(using= StringDeserializer.class)
     @NotBlank(message = "Password is required")
     @Size(min = 12, message = "Password must be at least 12 characters long")
     @Pattern(
@@ -16,6 +20,7 @@ public class NewPasswordRequest {
     )
     private String newPassword;
 
+    @JsonDeserialize(using= StringDeserializer.class)
     private String passwordConfirm;
 
     public String getEmail() {
