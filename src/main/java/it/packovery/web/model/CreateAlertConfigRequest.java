@@ -2,20 +2,11 @@ package it.packovery.web.model;
 
 public class CreateAlertConfigRequest {
 
-    private String id;
     private String type;
     private String name;
     private String description;
     private String threshold;
     private boolean state;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getType() {
         return type;

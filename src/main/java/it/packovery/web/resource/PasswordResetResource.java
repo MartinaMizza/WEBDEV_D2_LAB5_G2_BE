@@ -54,8 +54,9 @@ public class PasswordResetResource {
     @Path("/confirm")
     @RolesAllowed({"password_reset_token"})
     @Transactional
-    public Response confirmReset(@Context SecurityContext securityContext,
-                                 OtpVerificationRequest otpVerificationRequest
+    public Response confirmReset(
+            @Context SecurityContext securityContext,
+            OtpVerificationRequest otpVerificationRequest
     ) {
         String email = securityContext.getUserPrincipal().getName();
 
@@ -77,8 +78,9 @@ public class PasswordResetResource {
     @Path("/reset")
     @RolesAllowed({"password_reset_token"})
     @Transactional
-    public Response confirmReset(@Context SecurityContext securityContext,
-                                 NewPasswordRequest newPasswordRequest
+    public Response confirmReset(
+            @Context SecurityContext securityContext,
+            NewPasswordRequest newPasswordRequest
     ) {
         String email = securityContext.getUserPrincipal().getName();
 

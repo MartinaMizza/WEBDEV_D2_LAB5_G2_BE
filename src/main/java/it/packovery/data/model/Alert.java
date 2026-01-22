@@ -52,12 +52,17 @@ public class Alert {
     )
     private Login resolvedBy;
 
+    @ManyToOne
+    @JoinColumn(name = "alter_configuration_id") // corrisponde alla colonna nel DB
+    public AlertConfig alterConfig;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "alert_type", nullable = false, columnDefinition = "alert_type_enum")
     private AlertType typeAlert;
 
-    public Alert(Long id, AlertStatus status, IssueResolution issueResolution, OffsetDateTime issueCreationTime, Order relatedOrder, OffsetDateTime createdTime, OffsetDateTime resolvedTime, String resolutionDescription, Login resolvedBy, AlertType typeAlert) {
-        this.id = id;
+    public Alert() {}
+
+    public Alert(AlertStatus status, IssueResolution issueResolution, OffsetDateTime issueCreationTime, Order relatedOrder, OffsetDateTime createdTime, OffsetDateTime resolvedTime, String resolutionDescription, Login resolvedBy, AlertConfig alterConfig, AlertType typeAlert) {
         this.status = status;
         this.issueResolution = issueResolution;
         this.issueCreationTime = issueCreationTime;
@@ -66,10 +71,9 @@ public class Alert {
         this.resolvedTime = resolvedTime;
         this.resolutionDescription = resolutionDescription;
         this.resolvedBy = resolvedBy;
+        this.alterConfig = alterConfig;
         this.typeAlert = typeAlert;
     }
-
-    public Alert() {}
 
     public Long getId() {
         return id;
@@ -143,9 +147,21 @@ public class Alert {
         this.resolvedBy = resolvedBy;
     }
 
-    public AlertType getTypeAlert() { return typeAlert;}
+    public AlertConfig getAlterConfig() {
+        return alterConfig;
+    }
 
-    public void setTypeAlert(AlertType typeAlert) { this.typeAlert = typeAlert;}
+    public void setAlterConfig(AlertConfig alterConfig) {
+        this.alterConfig = alterConfig;
+    }
+
+    public AlertType getTypeAlert() {
+        return typeAlert;
+    }
+
+    public void setTypeAlert(AlertType typeAlert) {
+        this.typeAlert = typeAlert;
+    }
 }
 
 
