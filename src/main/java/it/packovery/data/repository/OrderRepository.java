@@ -5,6 +5,7 @@ import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import it.packovery.data.model.Order;
+import it.packovery.data.model.enumModel.OrderStatus;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.OffsetDateTime;
@@ -74,6 +75,16 @@ public class OrderRepository implements PanacheRepository<Order> {
             return findAll(sortBy).page(Page.of(page, offset)).list();
         }
 
+    }
+
+    public List<Order> findByStatus(OrderStatus status) {
+        return find("""
+                    SELECT o
+                    FROM Order o
+                    WHERE o.orderStatus = :status
+                """,
+                Parameters.with("status", status)
+        ).list();
     }
 
     public List<Order> findPendingOrdersOlderThan(OffsetDateTime limitTime) {

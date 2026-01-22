@@ -1,8 +1,10 @@
 package it.packovery.service;
 
+import io.quarkus.security.UnauthorizedException;
 import it.packovery.data.model.AlertConfig;
+import it.packovery.data.model.login.Login;
 import it.packovery.data.repository.AlertConfigRepository;
-import it.packovery.service.exception.AlertConfigAlreadyExistsException;
+import it.packovery.data.repository.LoginRepository;
 import it.packovery.service.exception.AlertConfigCreationException;
 import it.packovery.service.exception.AlertConfigDeletionException;
 import it.packovery.service.exception.NotFoundException;
@@ -21,13 +23,17 @@ import java.util.List;
 public class AlertConfigService {
 
     private final AlertConfigRepository alertConfigRepository;
+    private final LoginRepository loginRepository;
 
-    public AlertConfigService(AlertConfigRepository alertConfigRepository) {
+    public AlertConfigService(AlertConfigRepository alertConfigRepository, LoginRepository loginRepository) {
         this.alertConfigRepository = alertConfigRepository;
+        this.loginRepository = loginRepository;
     }
 
-    public List<AlertConfigResponse> getAllAlertsConfig() {
-        List<AlertConfig> alertConfigList = alertConfigRepository.findAll().list();
+    public List<AlertConfigResponse> getAllAlertsConfigByUserEmail(String email) {
+        Login login = loginRepository.findByEmail(email);
+
+        List<AlertConfig> alertConfigList = alertConfigRepository.findAllByUserId(login.getId());
 
         List<AlertConfigResponse> alertConfigResponseList = new ArrayList<>();
         for (AlertConfig alertConfig : alertConfigList) {
@@ -38,22 +44,20 @@ public class AlertConfigService {
     }
 
     @Transactional
-    public AlertConfigResponse createAlertConfig(CreateAlertConfigRequest request) {
-        AlertConfig existingAlertConfig = alertConfigRepository.findById(request.getId());
+    public AlertConfigResponse createAlertConfig(String email, CreateAlertConfigRequest request) {
+        Login login = loginRepository.findByEmail(email);
 
-        if (existingAlertConfig != null) {
-            throw new AlertConfigAlreadyExistsException(
-                    "Alert config with id: " + request.getId() + " already exists"
-            );
+        if (login == null) {
+            throw new NotFoundException("User not found");
         }
 
         AlertConfig newAlertConfig = new AlertConfig(
-                request.getId(),
                 request.getType(),
                 request.getName(),
                 request.getDescription(),
                 request.getThreshold(),
-                request.isState()
+                request.isState(),
+                login
         );
 
         try {
@@ -67,29 +71,19 @@ public class AlertConfigService {
     }
 
     @Transactional
-    public AlertConfigResponse updateAlertConfig(String id, UpdateAlertConfigRequest updateAlertConfigRequest) {
+    public AlertConfigResponse updateAlertConfig(String id, UpdateAlertConfigRequest updateAlertConfigRequest, String email) {
         AlertConfig alertConfig = alertConfigRepository.findById(id);
 
         if (alertConfig == null) {
             throw new NotFoundException("Alert config with id: " + id + " not found");
         }
 
-        if (updateAlertConfigRequest.getId() != null && !updateAlertConfigRequest.getId().isBlank()
-                && !updateAlertConfigRequest.getId().equals(alertConfig.getId())
+        Login login = loginRepository.findByEmail(email);
+        canUpdateAlertConfig(alertConfig, login);
+
+        if (updateAlertConfigRequest.getThreshold() != null && !updateAlertConfigRequest.getThreshold().isBlank() &&
+                !updateAlertConfigRequest.getThreshold().equals(alertConfig.getThreshold())
         ) {
-            AlertConfig alreadyExistingAlertConfig = alertConfigRepository.findById(updateAlertConfigRequest.getId());
-
-            if (alreadyExistingAlertConfig != null) {
-                throw new AlertConfigAlreadyExistsException(
-                        "Alert config with id: " + updateAlertConfigRequest.getId() + " already exists"
-                );
-            }
-
-            alertConfig.setId(updateAlertConfigRequest.getId());
-        }
-
-        if (updateAlertConfigRequest.getThreshold() != null && !updateAlertConfigRequest.getThreshold().isBlank()
-                && !updateAlertConfigRequest.getThreshold().equals(alertConfig.getThreshold())) {
             alertConfig.setThreshold(updateAlertConfigRequest.getThreshold());
         }
 
@@ -101,28 +95,17 @@ public class AlertConfigService {
     }
 
     @Transactional
-    public AlertConfigResponse updateStateAlertConfig(String id, UpdateStateAlertConfigRequest updateStateAlertConfigRequest) {
+    public AlertConfigResponse updateStateAlertConfig(String id, UpdateStateAlertConfigRequest updateStateAlertConfigRequest, String email) {
         AlertConfig alertConfig = alertConfigRepository.findById(id);
 
         if (alertConfig == null) {
             throw new NotFoundException("Alert config with id: " + id + " not found");
         }
 
-        if (updateStateAlertConfigRequest.getId() != null && !updateStateAlertConfigRequest.getId().isBlank()
-                && !updateStateAlertConfigRequest.getId().equals(alertConfig.getId())
-        ) {
-            AlertConfig alreadyExistingAlertConfig = alertConfigRepository.findById(updateStateAlertConfigRequest.getId());
+        Login login = loginRepository.findByEmail(email);
+        canUpdateAlertConfig(alertConfig, login);
 
-            if (alreadyExistingAlertConfig != null) {
-                throw new AlertConfigAlreadyExistsException(
-                        "Alert config with id: " + updateStateAlertConfigRequest.getId() + " already exists"
-                );
-            }
-
-            alertConfig.setId(updateStateAlertConfigRequest.getId());
-        }
-
-        if (updateStateAlertConfigRequest.getState() != null && updateStateAlertConfigRequest.getState() != alertConfig.isState()) {
+        if (updateStateAlertConfigRequest.getState() != alertConfig.isState()) {
             alertConfig.setState(updateStateAlertConfigRequest.getState());
         }
 
@@ -130,12 +113,15 @@ public class AlertConfigService {
     }
 
     @Transactional
-    public AlertConfigResponse deleteAlertConfig(String id) {
+    public AlertConfigResponse deleteAlertConfig(String id, String email) {
         AlertConfig alertConfig = alertConfigRepository.findById(id);
 
         if (alertConfig == null) {
             throw new NotFoundException("Alert config with id: " + id + " not found");
         }
+
+        Login login = loginRepository.findByEmail(email);
+        canUpdateAlertConfig(alertConfig, login);
 
         try {
             alertConfigRepository.delete(alertConfig);
@@ -158,4 +144,9 @@ public class AlertConfigService {
         );
     }
 
+    private static void canUpdateAlertConfig(AlertConfig alertConfig, Login login) {
+        if (!alertConfig.getLogin().getId().equals(login.getId())) {
+            throw new UnauthorizedException("User not authorized to update alert config");
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package it.packovery.data.model;
 
+import it.packovery.data.model.login.Login;
 import jakarta.persistence.*;
 
 @Entity
@@ -7,7 +8,8 @@ import jakarta.persistence.*;
 public class AlertConfig {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "type", nullable = false)
     private String type;
@@ -24,22 +26,26 @@ public class AlertConfig {
     @Column(name = "state", nullable = false)
     private boolean state;
 
-    public AlertConfig(String id, String type, String name, String description, String threshold, boolean state) {
-        this.id = id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    public Login login;
+
+    public AlertConfig(String type, String name, String description, String threshold, boolean state, Login login) {
         this.type = type;
         this.name = name;
         this.description = description;
         this.threshold = threshold;
         this.state = state;
+        this.login = login;
     }
 
     public AlertConfig() {}
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -81,5 +87,13 @@ public class AlertConfig {
 
     public void setState(boolean state) {
         this.state = state;
+    }
+
+    public Login getLogin() {
+        return login;
+    }
+
+    public void setLogin(Login login) {
+        this.login = login;
     }
 }

@@ -69,8 +69,8 @@ public class PasswordResetService {
         return toLoginResponse(login);
     }
 
-    public void processOtpVerificationRequest(OtpVerificationRequest otpVerificationRequest) {
-        Login login = loginRepository.findByEmail(otpVerificationRequest.getEmail());
+    public void processOtpVerificationRequest(String email, OtpVerificationRequest otpVerificationRequest) {
+        Login login = loginRepository.findByEmail(email);
 
         if (login == null) {
             throw new NotFoundException("User not found");
@@ -98,8 +98,8 @@ public class PasswordResetService {
         }
     }
 
-    public void resetPassword(NewPasswordRequest newPasswordRequest) {
-        Login login = loginRepository.findByEmail(newPasswordRequest.getEmail());
+    public void resetPassword(String email, NewPasswordRequest newPasswordRequest) {
+        Login login = loginRepository.findByEmail(email);
 
         if (login == null) {
             throw new NotFoundException("User not found");

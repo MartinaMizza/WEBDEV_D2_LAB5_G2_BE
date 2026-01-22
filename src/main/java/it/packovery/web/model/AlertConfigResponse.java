@@ -2,14 +2,14 @@ package it.packovery.web.model;
 
 public class AlertConfigResponse {
 
-    private String id;
+    private Long id;
     private String type;
     private String name;
     private String description;
     private String threshold;
     private boolean state;
 
-    public AlertConfigResponse(String id, String type, String name, String description, String threshold, boolean state) {
+    public AlertConfigResponse(Long id, String type, String name, String description, String threshold, boolean state) {
         this.id = id;
         this.type = type;
         this.name = name;
@@ -18,11 +18,11 @@ public class AlertConfigResponse {
         this.state = state;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

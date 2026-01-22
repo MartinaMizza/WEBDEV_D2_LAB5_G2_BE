@@ -1,13 +1,11 @@
 package it.packovery.service;
 
 import it.packovery.data.model.Alert;
-import it.packovery.data.model.MapAndGps;
-import it.packovery.data.model.Order;
 import it.packovery.data.model.enumModel.IssueResolution;
-import it.packovery.data.model.enumModel.OrderStatus;
 import it.packovery.data.model.login.Login;
 import it.packovery.data.repository.AlertRepository;
 import it.packovery.data.repository.LoginRepository;
+import it.packovery.service.exception.NotFoundException;
 import it.packovery.web.model.exception.AlertResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -36,8 +34,13 @@ public class AlertService {
         return alertResponses;
     }
 
-    public List<AlertResponse> getPendingAlerts() {
-        List<Alert> alertList = alertRepository.findPendingAlerts();
+    public List<AlertResponse> getPendingAlertsByUser(String email) {
+        Login login = loginRepository.findByEmail(email);
+
+        if (login == null) {
+            throw new NotFoundException("User not found");
+        }
+        List<Alert> alertList = alertRepository.findPendingAlertsByUser(login);
 
         List<AlertResponse> alertResponseList = new ArrayList<>();
         for (Alert alert : alertList) {
@@ -49,76 +52,38 @@ public class AlertService {
 
     public AlertResponse getAlertById(Long id) {
         Alert existing = alertRepository.findById(id);
+
         if (existing == null) {
             throw new RuntimeException("Alert with id " + id + " not found");
         }
-        AlertResponse alertResponse = toAlertResponse(existing);
-        return alertResponse;
+
+        return toAlertResponse(existing);
     }
 
-    public boolean resolveAlert(Long id,Alert alert) {
-        Alert existing = alertRepository.findById(id);
-        if (existing == null) {
-            return false;
-        }
-        OffsetDateTime now = OffsetDateTime.now();
-        existing.setIssueResolution(IssueResolution.RESOLVED);
-        existing.setResolvedBy(alert.getResolvedBy());
-        existing.setResolvedTime(now);
-        existing.setResolutionDescription(alert.getResolutionDescription());
-        return true;
-    }
+    @Transactional
+    public void resolveAlert(Long id, String userEmail) {
+        Alert alert = alertRepository.findById(id);
 
-    public boolean automaticResolveAlert() {
-        List<Alert> alerts = alertRepository.findPendingAlerts();
-
-        Login systemUser = loginRepository.find("email", "SYSTEM").firstResult();
-        if (systemUser == null) {
-            Login system = new Login();
-            system.setEmail("SYSTEM");
-            system.setSystem(true);
-            system.setPassword(null);
-            loginRepository.persist(system);
-            systemUser = system;
+        if (alert == null) {
+            throw new NotFoundException("Alert with id " + id + " not found");
         }
 
-        OffsetDateTime now = OffsetDateTime.now();
+        Login login = loginRepository.findByEmail(userEmail);
 
-        for (Alert alert : alerts) {
-            Order order = alert.getRelatedOrder();
-            if (order == null) continue;
-
-            MapAndGps latestGps = order.getMapAndGps();
-            OffsetDateTime positionTimestamp = latestGps != null ? latestGps.getPositionTimestamp() : null;
-
-            switch (alert.getTypeAlert()) {
-
-                case GPS_INTERRUPTED:
-                    if (positionTimestamp != null &&
-                            positionTimestamp.isAfter(alert.getCreatedTime())) {
-                        resolve(alert, systemUser, now,
-                                "Risolto automaticamente: nuovo segnale GPS rilevato");
-                    }
-                    break;
-
-                case DELIVERY_DELAY:
-                    if (order.getOrderStatus() == OrderStatus.DELIVERED) {
-                        resolve(alert, systemUser, now,
-                                "Risolto automaticamente: ordine consegnato");
-                    }
-                    break;
-
-                case DEPARTURE_DELAY:
-                    if (positionTimestamp != null &&
-                            positionTimestamp.isAfter(alert.getCreatedTime())) {
-                        resolve(alert, systemUser, now,
-                                "Risolto automaticamente: ordine partito");
-                    }
-                    break;
-            }
+        if (login == null) {
+            throw new NotFoundException("User not found");
         }
 
-        return true;
+        alert.setResolvedBy(login);
+        alert.setIssueResolution(IssueResolution.RESOLVED);
+        alert.setResolvedTime(OffsetDateTime.now());
+        alert.setResolutionDescription("Risolto manualmente");
+
+        List<Alert> unresolvedAlertsByOrder = alertRepository.findPendingAlertsByOrderAndType(alert.getRelatedOrder(), alert.getTypeAlert());
+
+        for (Alert unresolvedAlert : unresolvedAlertsByOrder) {
+            alertRepository.delete(unresolvedAlert);
+        }
     }
 
     private void resolve(Alert alert, Login systemUser, OffsetDateTime now, String description) {

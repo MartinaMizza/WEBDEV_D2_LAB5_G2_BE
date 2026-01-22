@@ -1,6 +1,5 @@
 package it.packovery.web.resource;
 
-import it.packovery.data.model.Alert;
 import it.packovery.service.AlertService;
 import it.packovery.web.model.exception.AlertResponse;
 import jakarta.annotation.security.DenyAll;
@@ -37,8 +36,10 @@ public class AlertResource {
     @GET
     @RolesAllowed({"access_token"})
     @Path("/pending")
-    public List<AlertResponse> getPendingAlerts() {
-        return alertService.getPendingAlerts();
+    public List<AlertResponse> getPendingAlertsByUser(@Context SecurityContext securityContext) {
+        String userEmail = securityContext.getUserPrincipal().getName();
+
+        return alertService.getPendingAlertsByUser(userEmail);
     }
 
     @GET
@@ -51,17 +52,17 @@ public class AlertResource {
     @PUT
     @RolesAllowed({"access_token"})
     @Path("/resolve/{id}")
-    public Response resolveAlert(@Context SecurityContext securityContext,
-                                 @PathParam("id") Long id, Alert alert
+    public Response resolveAlert(
+            @Context SecurityContext securityContext,
+            @PathParam("id") Long id
     ) {
         String userEmail = securityContext.getUserPrincipal().getName();
 
+        alertService.resolveAlert(id, userEmail);
+
         LOG.infof("SECURITY EVENT - User [%s] is resolving Alert ID: [%d]", userEmail, id);
 
-        if(alertService.resolveAlert(id, alert)){
-            return Response.ok("Alert resolved.").build();
-        }
-        return Response.status(Response.Status.BAD_REQUEST).build();
+        return Response.ok("Alert resolved.").build();
     }
 
     @PUT
@@ -70,10 +71,12 @@ public class AlertResource {
     public Response automaticResolveAlert() {
         LOG.infof("SECURITY EVENT - SYSTEM ACTION - Starting automatic alert resolution process");
 
+        /*
         if(alertService.automaticResolveAlert()){
             LOG.infof("SECURITY EVENT - SYSTEM ACTION - Automatic alert resolution completed successfully");
             return Response.ok("Alert automatically resolved.").build();
         }
+         */
 
         LOG.errorf("SECURITY EVENT - SYSTEM ACTION - Automatic alert resolution failed");
         return Response.status(Response.Status.BAD_REQUEST).build();

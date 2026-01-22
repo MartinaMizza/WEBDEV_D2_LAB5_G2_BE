@@ -54,13 +54,14 @@ public class PasswordResetResource {
     @Path("/confirm")
     @RolesAllowed({"password_reset_token"})
     @Transactional
-    public Response confirmReset(@Context SecurityContext securityContext,
-                                 OtpVerificationRequest otpVerificationRequest
+    public Response confirmReset(
+            @Context SecurityContext securityContext,
+            OtpVerificationRequest otpVerificationRequest
     ) {
         String email = securityContext.getUserPrincipal().getName();
 
         try {
-            passwordResetService.processOtpVerificationRequest(otpVerificationRequest);
+            passwordResetService.processOtpVerificationRequest(email, otpVerificationRequest);
 
             LOG.infof("SECURITY EVENT - Password successfully reset for user: [%s]", email);
             return Response.ok().build();
@@ -77,13 +78,14 @@ public class PasswordResetResource {
     @Path("/reset")
     @RolesAllowed({"password_reset_token"})
     @Transactional
-    public Response confirmReset(@Context SecurityContext securityContext,
-                                 NewPasswordRequest newPasswordRequest
+    public Response confirmReset(
+            @Context SecurityContext securityContext,
+            NewPasswordRequest newPasswordRequest
     ) {
         String email = securityContext.getUserPrincipal().getName();
 
         try {
-            passwordResetService.resetPassword(newPasswordRequest);
+            passwordResetService.resetPassword(email, newPasswordRequest);
 
             LOG.infof("SECURITY EVENT - User [%s] has successfully changed his password.", email);
 

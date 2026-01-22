@@ -64,6 +64,9 @@ public class Order {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
+    @Column(name = "planned_pickup_time", nullable = false)
+    private OffsetDateTime plannedPickupTime;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "means_of_transportation")
     private MeansOfTransportation meansOfTransportation = null;
@@ -78,7 +81,7 @@ public class Order {
 
     public Order() {}
 
-    public Order(String trackingCode, OrderStatus orderStatus, OffsetDateTime plannedDeliveryTime, OffsetDateTime actualDeliveryTime, Long deliveryDelay, PriorityLevel priorityLevel, PackageSize packageSize, PackageWeight packageWeight, boolean oversize, boolean overweight, BigDecimal actualSize, BigDecimal actualWeight, String pickupLocation, String deliveryLocation, OffsetDateTime createdAt, MeansOfTransportation meansOfTransportation, User user, MapAndGps mapAndGps) {
+    public Order(String trackingCode, OrderStatus orderStatus, OffsetDateTime plannedDeliveryTime, OffsetDateTime actualDeliveryTime, Long deliveryDelay, PriorityLevel priorityLevel, PackageSize packageSize, PackageWeight packageWeight, boolean oversize, boolean overweight, BigDecimal actualSize, BigDecimal actualWeight, String pickupLocation, String deliveryLocation, OffsetDateTime createdAt, OffsetDateTime plannedPickupTime, MeansOfTransportation meansOfTransportation, User user, MapAndGps mapAndGps) {
         this.trackingCode = trackingCode;
         this.orderStatus = orderStatus;
         this.plannedDeliveryTime = plannedDeliveryTime;
@@ -94,6 +97,7 @@ public class Order {
         this.pickupLocation = pickupLocation;
         this.deliveryLocation = deliveryLocation;
         this.createdAt = createdAt;
+        this.plannedPickupTime = plannedPickupTime;
         this.meansOfTransportation = meansOfTransportation;
         this.user = user;
         this.mapAndGps = mapAndGps;
@@ -225,6 +229,14 @@ public class Order {
 
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public OffsetDateTime getPlannedPickupTime() {
+        return plannedPickupTime;
+    }
+
+    public void setPlannedPickupTime(OffsetDateTime plannedPickupTime) {
+        this.plannedPickupTime = plannedPickupTime;
     }
 
     public MeansOfTransportation getMeansOfTransportation() {
