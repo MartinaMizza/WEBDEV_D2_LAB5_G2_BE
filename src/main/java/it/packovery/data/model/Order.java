@@ -15,7 +15,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "tracking_code", nullable = false, unique = true)
+    @Column(name = "tracking_code", columnDefinition = "VARCHAR", nullable = false, unique = true)
     private String trackingCode;
 
     @Enumerated(EnumType.STRING)
@@ -68,8 +68,11 @@ public class Order {
     private OffsetDateTime plannedPickupTime;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "means_of_transportation")
-    private MeansOfTransportation meansOfTransportation = null;
+    @Column(
+            name = "means_of_transportation",
+            columnDefinition = "means_of_transportation_enum"
+    )
+    private MeansOfTransportation meansOfTransportation;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)

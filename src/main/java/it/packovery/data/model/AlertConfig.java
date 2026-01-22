@@ -11,16 +11,16 @@ public class AlertConfig {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "type", nullable = false)
+    @Column(name = "type", columnDefinition = "VARCHAR", nullable = false)
     private String type;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", columnDefinition = "VARCHAR", nullable = false)
     private String name;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", columnDefinition = "VARCHAR", nullable = false)
     private String description;
 
-    @Column(name = "threshold", nullable = false)
+    @Column(name = "threshold", columnDefinition = "VARCHAR", nullable = false)
     private String threshold;
 
     @Column(name = "state", nullable = false)
