@@ -45,8 +45,6 @@ public class AlertMonitorService {
 
         List<Order> readyOrders = orderRepository.findByStatus(OrderStatus.READY);
         List<Order> inTransitOrders = orderRepository.findByStatus(OrderStatus.IN_TRANSIT);
-        System.out.println(inTransitOrders.size());
-        System.out.println(readyOrders.size());
 
         for (AlertConfig alert : alertConfigsByType.getOrDefault("Segnale GPS interrotto", List.of())) {
             int thresholdMinutes = parseThresholdToMinutes(alert.getThreshold());
@@ -143,6 +141,12 @@ public class AlertMonitorService {
         alert.setIssueResolution(IssueResolution.RESOLVED);
         alert.setResolvedTime(OffsetDateTime.now());
         alert.setResolutionDescription("Risolto automaticamente");
+
+        List<Alert> unresolvedAlertsByOrder = alertRepository.findPendingAlertsByOrderAndType(alert.getRelatedOrder(), alert.getTypeAlert());
+
+        for (Alert unresolvedAlert : unresolvedAlertsByOrder) {
+            alertRepository.delete(unresolvedAlert);
+        }
     }
 
     public int parseThresholdToMinutes(String threshold) {

@@ -38,27 +38,20 @@ public class LoginResource {
     @Produces(MediaType.APPLICATION_JSON)
     @PermitAll
     public Response login(LoginRequest request) {
-        try {
-            LoginResponse user = loginService.authenticate(request.getEmail(), request.getPassword());
+        LoginResponse user = loginService.authenticate(request.getEmail(), request.getPassword());
 
-            if (user != null) {
-                LOG.infof("SECURITY EVENT - Successful login for user: [%s]", request.getEmail());
+        if (user != null) {
+            LOG.infof("SECURITY EVENT - Successful login for user: [%s]", request.getEmail());
 
-                String accessToken = getAccessToken(user);
-                String refreshToken = getRefreshToken(user);
-                return Response.ok(new TokenResponse(accessToken, refreshToken)).build();
-            }
-            else {
-                LOG.warnf("SECURITY EVENT - Failed login attempt for user: [%s]", request.getEmail());
-                return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
-            }
+            String accessToken = getAccessToken(user);
+            String refreshToken = getRefreshToken(user);
+            return Response.ok(new TokenResponse(accessToken, refreshToken)).build();
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            LOG.errorf("SECURITY EVENT - Authentication error for user [%s]: %s", request.getEmail(), e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-
+        else {
+            LOG.warnf("SECURITY EVENT - Failed login attempt for user: [%s]", request.getEmail());
+            return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
         }
+
     }
 
     @POST

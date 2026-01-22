@@ -79,7 +79,7 @@ public class AlertService {
         alert.setResolvedTime(OffsetDateTime.now());
         alert.setResolutionDescription("Risolto manualmente");
 
-        List<Alert> unresolvedAlertsByOrder = alertRepository.findUnresolvedByOrder(alert.getRelatedOrder());
+        List<Alert> unresolvedAlertsByOrder = alertRepository.findPendingAlertsByOrderAndType(alert.getRelatedOrder(), alert.getTypeAlert());
 
         for (Alert unresolvedAlert : unresolvedAlertsByOrder) {
             alertRepository.delete(unresolvedAlert);
