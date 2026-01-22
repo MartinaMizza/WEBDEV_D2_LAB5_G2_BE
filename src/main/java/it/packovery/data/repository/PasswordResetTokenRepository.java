@@ -7,6 +7,8 @@ import it.packovery.data.model.PasswordResetToken;
 import it.packovery.data.model.login.Login;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.util.List;
+
 @ApplicationScoped
 public class PasswordResetTokenRepository implements PanacheRepository<PasswordResetToken> {
 
@@ -16,6 +18,16 @@ public class PasswordResetTokenRepository implements PanacheRepository<PasswordR
                     FROM PasswordResetToken t
                     WHERE t.login.email = :email
                     ORDER BY createdAt DESC
+                """,
+                Parameters.with("email", login.getEmail())
+        ).firstResult();
+    }
+
+    public List<PasswordResetToken> findAllByLogin(Login login) {
+        return find("""
+                    SELECT t
+                    FROM PasswordResetToken t
+                    WHERE t.login.email = :email
                 """,
                 Parameters.with("email", login.getEmail())
         ).firstResult();
