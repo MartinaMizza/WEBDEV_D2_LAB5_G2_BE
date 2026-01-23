@@ -55,11 +55,29 @@ public class Order {
     @Column(name = "actual_weight", precision = 10, scale = 3)
     private BigDecimal actualWeight;
 
-    @Column(name = "pickup_location", columnDefinition = "TEXT", nullable = false)
-    private String pickupLocation;
+    @Column(name = "pickup_address", columnDefinition = "TEXT", nullable = false)
+    private String pickupAddress;
 
-    @Column(name = "delivery_location", columnDefinition = "TEXT", nullable = false)
-    private String deliveryLocation;
+    @Column(name = "pickup_city", columnDefinition = "TEXT", nullable = false)
+    private String pickupCity;
+
+    @Column(name = "pickup_postal_code", columnDefinition = "TEXT", nullable = false)
+    private String pickupPostalCode;
+
+    @Column(name = "pickup_province", columnDefinition = "TEXT", nullable = false)
+    private String pickupProvince;
+
+    @Column(name = "delivery_address", columnDefinition = "TEXT", nullable = false)
+    private String deliveryAddress;
+
+    @Column(name = "delivery_city", columnDefinition = "TEXT", nullable = false)
+    private String deliveryCity;
+
+    @Column(name = "delivery_postal_code", columnDefinition = "TEXT", nullable = false)
+    private String deliveryPostalCode;
+
+    @Column(name = "delivery_province", columnDefinition = "TEXT", nullable = false)
+    private String deliveryProvince;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
@@ -84,7 +102,7 @@ public class Order {
 
     public Order() {}
 
-    public Order(String trackingCode, OrderStatus orderStatus, OffsetDateTime plannedDeliveryTime, OffsetDateTime actualDeliveryTime, Long deliveryDelay, PriorityLevel priorityLevel, PackageSize packageSize, PackageWeight packageWeight, boolean oversize, boolean overweight, BigDecimal actualSize, BigDecimal actualWeight, String pickupLocation, String deliveryLocation, OffsetDateTime createdAt, OffsetDateTime plannedPickupTime, MeansOfTransportation meansOfTransportation, User user, MapAndGps mapAndGps) {
+    public Order(String trackingCode, OrderStatus orderStatus, OffsetDateTime plannedDeliveryTime, OffsetDateTime actualDeliveryTime, Long deliveryDelay, PriorityLevel priorityLevel, PackageSize packageSize, PackageWeight packageWeight, boolean oversize, boolean overweight, BigDecimal actualSize, BigDecimal actualWeight, String pickupAddress, String pickupCity, String pickupPostalCode, String pickupProvince, String deliveryAddress, String deliveryCity, String deliveryPostalCode, String deliveryProvince, OffsetDateTime createdAt, OffsetDateTime plannedPickupTime, MeansOfTransportation meansOfTransportation, User user, MapAndGps mapAndGps) {
         this.trackingCode = trackingCode;
         this.orderStatus = orderStatus;
         this.plannedDeliveryTime = plannedDeliveryTime;
@@ -97,8 +115,14 @@ public class Order {
         this.overweight = overweight;
         this.actualSize = actualSize;
         this.actualWeight = actualWeight;
-        this.pickupLocation = pickupLocation;
-        this.deliveryLocation = deliveryLocation;
+        this.pickupAddress = pickupAddress;
+        this.pickupCity = pickupCity;
+        this.pickupPostalCode = pickupPostalCode;
+        this.pickupProvince = pickupProvince;
+        this.deliveryAddress = deliveryAddress;
+        this.deliveryCity = deliveryCity;
+        this.deliveryPostalCode = deliveryPostalCode;
+        this.deliveryProvince = deliveryProvince;
         this.createdAt = createdAt;
         this.plannedPickupTime = plannedPickupTime;
         this.meansOfTransportation = meansOfTransportation;
@@ -210,20 +234,68 @@ public class Order {
         this.actualWeight = actualWeight;
     }
 
-    public String getPickupLocation() {
-        return pickupLocation;
+    public String getPickupAddress() {
+        return pickupAddress;
     }
 
-    public void setPickupLocation(String pickupLocation) {
-        this.pickupLocation = pickupLocation;
+    public void setPickupAddress(String pickupAddress) {
+        this.pickupAddress = pickupAddress;
     }
 
-    public String getDeliveryLocation() {
-        return deliveryLocation;
+    public String getPickupCity() {
+        return pickupCity;
     }
 
-    public void setDeliveryLocation(String deliveryLocation) {
-        this.deliveryLocation = deliveryLocation;
+    public void setPickupCity(String pickupCity) {
+        this.pickupCity = pickupCity;
+    }
+
+    public String getPickupPostalCode() {
+        return pickupPostalCode;
+    }
+
+    public void setPickupPostalCode(String pickupPostalCode) {
+        this.pickupPostalCode = pickupPostalCode;
+    }
+
+    public String getPickupProvince() {
+        return pickupProvince;
+    }
+
+    public void setPickupProvince(String pickupProvince) {
+        this.pickupProvince = pickupProvince;
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public String getDeliveryCity() {
+        return deliveryCity;
+    }
+
+    public void setDeliveryCity(String deliveryCity) {
+        this.deliveryCity = deliveryCity;
+    }
+
+    public String getDeliveryPostalCode() {
+        return deliveryPostalCode;
+    }
+
+    public void setDeliveryPostalCode(String deliveryPostalCode) {
+        this.deliveryPostalCode = deliveryPostalCode;
+    }
+
+    public String getDeliveryProvince() {
+        return deliveryProvince;
+    }
+
+    public void setDeliveryProvince(String deliveryProvince) {
+        this.deliveryProvince = deliveryProvince;
     }
 
     public OffsetDateTime getCreatedAt() {

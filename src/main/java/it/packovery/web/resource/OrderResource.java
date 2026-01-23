@@ -53,7 +53,7 @@ public class OrderResource {
             @QueryParam("created-at") String createdAt,
             @QueryParam("weight") String weight,
             @QueryParam("size") String size
-    ) {
+    ) throws Exception {
         String userEmail = securityContext.getUserPrincipal().getName();
         String orderType;
         if (status != null) {
@@ -151,7 +151,7 @@ public class OrderResource {
     public Response getDetailedOrderById(
             @PathParam("id") long id,
             @Context SecurityContext securityContext
-    ) {
+    ) throws Exception {
         String userEmail = securityContext.getUserPrincipal().getName();
         OrderDetailsResponse orderDetailsResponse = orderService.getDetailedOrderById(id, userEmail);
 
