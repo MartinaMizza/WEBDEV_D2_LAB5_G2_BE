@@ -16,6 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.PersistenceException;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @ApplicationScoped
@@ -91,7 +92,11 @@ public class PasswordResetService {
         }
 
         try {
-            passwordResetTokenRepository.delete(token);
+            List<PasswordResetToken> passwordResetTokenList = passwordResetTokenRepository.findAllByLogin(login);
+
+            for (PasswordResetToken token1 : passwordResetTokenList) {
+                passwordResetTokenRepository.delete(token1);
+            }
         }
         catch (PersistenceException e) {
             throw new PasswordResetTokenDeletionException("Failed to delete otp token due to server error", e);

@@ -21,7 +21,7 @@ public class PasswordResetToken {
     )
     public Login login;
 
-    @Column(name = "otp_hash", nullable = false)
+    @Column(name = "otp_hash", columnDefinition = "VARCHAR", nullable = false)
     private String otpHash;
 
     @Column(name = "expires_at", nullable = false)

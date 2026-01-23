@@ -1,5 +1,6 @@
 package it.packovery.service;
 
+import io.quarkus.elytron.security.common.BcryptUtil;
 import it.packovery.data.model.Order;
 
 import it.packovery.data.model.enumModel.OrderStatus;
@@ -14,6 +15,7 @@ import it.packovery.web.model.OrderResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -25,19 +27,22 @@ public class OrderService {
     private final LoggingRepository loggingRepository;
     private final RoutingService routingService;
     private final AddressService addressService;
+    private final CryptoService cryptoService;
 
     public OrderService(
             OrderRepository orderRepository,
             LoginRepository loginRepository,
             LoggingRepository loggingRepository,
             RoutingService routingService,
-            AddressService addressService
+            AddressService addressService,
+            CryptoService cryptoService
     ) {
         this.orderRepository = orderRepository;
         this.loginRepository = loginRepository;
         this.loggingRepository = loggingRepository;
         this.routingService = routingService;
         this.addressService = addressService;
+        this.cryptoService = cryptoService;
     }
 
     public List<OrderResponse> findOrders(
@@ -45,16 +50,18 @@ public class OrderService {
             String sortingElement,
             String sortingDirection,
             int page,
-            int offset) {
+            int offset) throws Exception {
         List<Order> ordersList = orderRepository.findOrders(filters, sortingElement, sortingDirection,  page, offset);
 
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (Order order : ordersList) {
-            String[] splitPickupLocation = order.getPickupLocation().split(",");
-            String pickupLocation = splitPickupLocation[1].trim() + " " + splitPickupLocation[3].trim();
+            String decryptedPickupAddress = cryptoService.decrypt(order.getPickupAddress());
+            String decryptedPickupProvince = cryptoService.decrypt(order.getPickupProvince());
+            String pickupLocation = decryptedPickupAddress + ", " + decryptedPickupProvince;
 
-            String[] splitDeliveryLocation = order.getDeliveryLocation().split(",");
-            String deliveryLocation = splitDeliveryLocation[1].trim() + " " + splitDeliveryLocation[3].trim();
+            String decryptedDeliveryAddress = cryptoService.decrypt(order.getDeliveryAddress());
+            String decryptedDeliveryProvince = cryptoService.decrypt(order.getDeliveryProvince());
+            String deliveryLocation = decryptedDeliveryAddress + ", " + decryptedDeliveryProvince;
 
             orderResponseList.add(toOrderResponse(order, pickupLocation, deliveryLocation));
         }
@@ -62,7 +69,7 @@ public class OrderService {
         return orderResponseList;
     }
 
-    public OrderDetailsResponse getDetailedOrderById(Long orderId, String userEmail) {
+    public OrderDetailsResponse getDetailedOrderById(Long orderId, String userEmail) throws Exception {
         Order order = orderRepository.findById(orderId);
 
         if (order == null) {
@@ -81,6 +88,20 @@ public class OrderService {
 //        else {
 //            loggingRepository.createViewedOpenOrderLogRecord(login.getId());
 //        }
+
+        String decryptedPickupAddress = cryptoService.decrypt(order.getPickupAddress());
+        String decryptedPickupCity = cryptoService.decrypt(order.getPickupCity());
+        String decryptedPickupPostalCode = cryptoService.decrypt(order.getPickupPostalCode());
+        String decryptedPickupProvince = cryptoService.decrypt(order.getPickupProvince());
+        String pickupLocation = decryptedPickupAddress + ", " + decryptedPickupCity + ", " + decryptedPickupPostalCode + ", " + decryptedPickupProvince;
+
+        String decryptedDeliveryAddress = cryptoService.decrypt(order.getDeliveryAddress());
+        String decryptedDeliveryCity = cryptoService.decrypt(order.getDeliveryCity());
+        String decryptedDeliveryPostalCode = cryptoService.decrypt(order.getDeliveryPostalCode());
+        String decryptedDeliveryProvince = cryptoService.decrypt(order.getDeliveryProvince());
+        String deliveryLocation = decryptedDeliveryAddress + ", " + decryptedDeliveryCity + ", " + decryptedDeliveryPostalCode + ", " + decryptedDeliveryProvince;
+
+
 
         Route pickupDeliveryRoute = routingService.createRoute(
                 order.getMapAndGps().getPickupLongitude(),
@@ -125,7 +146,9 @@ public class OrderService {
                 order,
                 pickupDeliveryRoute,
                 pickupRiderRoute,
-                riderDeliveryRoute
+                riderDeliveryRoute,
+                pickupLocation,
+                deliveryLocation
         );
     }
 
@@ -146,7 +169,9 @@ public class OrderService {
             Order order,
             Route pickupDeliveryRoute,
             Route pickupRiderRoute,
-            Route riderDeliveryRoute
+            Route riderDeliveryRoute,
+            String pickupLocation,
+            String deliveryLocation
     ){
         return new OrderDetailsResponse(
                 order.getId(),
@@ -156,8 +181,8 @@ public class OrderService {
                 order.getCreatedAt(),
                 order.getPackageWeight().name(),
                 order.getPackageSize().name(),
-                order.getPickupLocation(),
-                order.getDeliveryLocation(),
+                pickupLocation,
+                deliveryLocation,
                 pickupDeliveryRoute,
                 order.getMapAndGps().getRider().getName(),
                 order.getMapAndGps().getRider().getSurname(),
