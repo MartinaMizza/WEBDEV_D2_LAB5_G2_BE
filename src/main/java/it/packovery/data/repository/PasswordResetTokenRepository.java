@@ -30,7 +30,7 @@ public class PasswordResetTokenRepository implements PanacheRepository<PasswordR
                     WHERE t.login.email = :email
                 """,
                 Parameters.with("email", login.getEmail())
-        ).firstResult();
+        ).list();
     }
 
 }
