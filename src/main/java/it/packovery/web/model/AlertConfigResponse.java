@@ -1,5 +1,7 @@
 package it.packovery.web.model;
 
+import java.time.OffsetDateTime;
+
 public class AlertConfigResponse {
 
     private Long id;
@@ -8,14 +10,16 @@ public class AlertConfigResponse {
     private String description;
     private String threshold;
     private boolean state;
+    private OffsetDateTime createdAt;
 
-    public AlertConfigResponse(Long id, String type, String name, String description, String threshold, boolean state) {
+    public AlertConfigResponse(Long id, String type, String name, String description, String threshold, boolean state, OffsetDateTime createdAt) {
         this.id = id;
         this.type = type;
         this.name = name;
         this.description = description;
         this.threshold = threshold;
         this.state = state;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -64,5 +68,13 @@ public class AlertConfigResponse {
 
     public void setState(boolean state) {
         this.state = state;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }
