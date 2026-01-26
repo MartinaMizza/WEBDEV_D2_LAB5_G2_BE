@@ -1,6 +1,5 @@
 package it.packovery.service;
 
-
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
@@ -8,9 +7,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class CryptoService {
@@ -19,19 +18,26 @@ public class CryptoService {
     private static final String AES_GCM = "AES/GCM/NoPadding";
     private static final int IV_SIZE = 12; // GCM standard
     private static final int TAG_SIZE = 128;
-    private static final Dotenv dotenv = Dotenv.load();
+
+    @ConfigProperty(name = "AES_KEY")
+    String base64Key;
 
     private SecretKey key;
     private final SecureRandom secureRandom = new SecureRandom();
 
     @PostConstruct
     void init() {
-        String base64Key = dotenv.get("AES_KEY");
-        if (base64Key == null) {
-            throw new RuntimeException("Variabile AES_KEY non impostata!");
+        if (base64Key == null || base64Key.isBlank()) {
+            throw new RuntimeException("AES_KEY non impostata");
         }
+
         byte[] decodedKey = Base64.getDecoder().decode(base64Key);
-        key = new SecretKeySpec(decodedKey, 0, decodedKey.length, AES);
+
+        if (!(decodedKey.length == 16 || decodedKey.length == 24 || decodedKey.length == 32)) {
+            throw new IllegalArgumentException("AES_KEY deve essere 128, 192 o 256 bit");
+        }
+
+        key = new SecretKeySpec(decodedKey, AES);
     }
 
     public String encrypt(String plaintext) throws Exception {
