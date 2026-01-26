@@ -1,9 +1,7 @@
 package it.packovery.service;
 
-import io.quarkus.elytron.security.common.BcryptUtil;
 import it.packovery.data.model.Order;
 
-import it.packovery.data.model.enumModel.OrderStatus;
 import it.packovery.data.model.login.Login;
 import it.packovery.data.repository.LoggingRepository;
 import it.packovery.data.repository.LoginRepository;
@@ -15,7 +13,6 @@ import it.packovery.web.model.OrderResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -55,13 +52,13 @@ public class OrderService {
 
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (Order order : ordersList) {
-            String decryptedPickupAddress = cryptoService.decrypt(order.getPickupAddress());
+            String decryptedPickupCity = cryptoService.decrypt(order.getPickupCity());
             String decryptedPickupProvince = cryptoService.decrypt(order.getPickupProvince());
-            String pickupLocation = decryptedPickupAddress + ", " + decryptedPickupProvince;
+            String pickupLocation = decryptedPickupCity + ", " + decryptedPickupProvince;
 
-            String decryptedDeliveryAddress = cryptoService.decrypt(order.getDeliveryAddress());
+            String decryptedDeliveryCity = cryptoService.decrypt(order.getDeliveryCity());
             String decryptedDeliveryProvince = cryptoService.decrypt(order.getDeliveryProvince());
-            String deliveryLocation = decryptedDeliveryAddress + ", " + decryptedDeliveryProvince;
+            String deliveryLocation = decryptedDeliveryCity + ", " + decryptedDeliveryProvince;
 
             orderResponseList.add(toOrderResponse(order, pickupLocation, deliveryLocation));
         }

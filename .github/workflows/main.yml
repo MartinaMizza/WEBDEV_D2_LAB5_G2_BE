@@ -1,4 +1,4 @@
-name: Workflow Trello Clone Backend
+name: Workflow Packovery Backend
 
 on:
   push:

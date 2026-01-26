@@ -16,6 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +58,7 @@ public class AlertConfigService {
                 request.getDescription(),
                 request.getThreshold(),
                 request.isState(),
+                OffsetDateTime.now(),
                 login
         );
 
@@ -140,7 +142,8 @@ public class AlertConfigService {
                 alertConfig.getName(),
                 alertConfig.getDescription(),
                 alertConfig.getThreshold(),
-                alertConfig.isState()
+                alertConfig.isState(),
+                alertConfig.getCreatedAt()
         );
     }
 

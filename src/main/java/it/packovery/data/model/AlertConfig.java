@@ -3,6 +3,8 @@ package it.packovery.data.model;
 import it.packovery.data.model.login.Login;
 import jakarta.persistence.*;
 
+import java.time.OffsetDateTime;
+
 @Entity
 @Table(name = "alerts_config")
 public class AlertConfig {
@@ -26,20 +28,25 @@ public class AlertConfig {
     @Column(name = "state", nullable = false)
     private boolean state;
 
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt = OffsetDateTime.now();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     public Login login;
 
-    public AlertConfig(String type, String name, String description, String threshold, boolean state, Login login) {
+    public AlertConfig() {
+    }
+
+    public AlertConfig(String type, String name, String description, String threshold, boolean state, OffsetDateTime createdAt, Login login) {
         this.type = type;
         this.name = name;
         this.description = description;
         this.threshold = threshold;
         this.state = state;
+        this.createdAt = createdAt;
         this.login = login;
     }
-
-    public AlertConfig() {}
 
     public Long getId() {
         return id;
@@ -87,6 +94,14 @@ public class AlertConfig {
 
     public void setState(boolean state) {
         this.state = state;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Login getLogin() {
