@@ -83,7 +83,7 @@ public class LoginResource {
                 .groups(Set.of("access_token", loginResponse.getRole()))
                 .claim(Claims.nickname.name(), loginResponse.getEmail())
                 .claim("id", loginResponse.getId())
-                .expiresIn(Duration.ofMinutes(10))
+                .expiresIn(Duration.ofMinutes(1))
                 .issuedAt(Instant.now())
                 .sign();
     }
