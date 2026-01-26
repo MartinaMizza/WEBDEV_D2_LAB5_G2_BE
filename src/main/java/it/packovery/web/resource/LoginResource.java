@@ -1,6 +1,7 @@
 package it.packovery.web.resource;
 
 import io.smallrye.jwt.build.Jwt;
+import it.packovery.service.LoggingService;
 import it.packovery.service.LoginService;
 import it.packovery.web.model.AccessTokenResponse;
 import it.packovery.web.model.LoginRequest;
@@ -27,9 +28,12 @@ public class LoginResource {
 
     private static final Logger LOG = Logger.getLogger(LoginResource.class);
     private final LoginService loginService;
+    private final LoggingService loggingService;
 
-    public LoginResource(LoginService loginService) {
+    public LoginResource(LoginService loginService, LoggingService loggingService)
+    {
         this.loginService = loginService;
+        this.loggingService = loggingService;
     }
 
     @POST
@@ -42,6 +46,8 @@ public class LoginResource {
 
         if (user != null) {
             LOG.infof("SECURITY EVENT - Successful login for user: [%s]", request.getEmail());
+
+            loggingService.logLogin(user.getId());
 
             String accessToken = getAccessToken(user);
             String refreshToken = getRefreshToken(user);
@@ -83,7 +89,7 @@ public class LoginResource {
                 .groups(Set.of("access_token", loginResponse.getRole()))
                 .claim(Claims.nickname.name(), loginResponse.getEmail())
                 .claim("id", loginResponse.getId())
-                .expiresIn(Duration.ofMinutes(10))
+                .expiresIn(Duration.ofMinutes(20))
                 .issuedAt(Instant.now())
                 .sign();
     }

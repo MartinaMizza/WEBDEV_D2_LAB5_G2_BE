@@ -4,6 +4,7 @@ import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Parameters;
 import it.packovery.data.model.login.Login;
+import it.packovery.service.LoggingService;
 import it.packovery.service.exception.AccountPermanentlyBlockedException;
 import it.packovery.service.exception.AccountTemporarilyBlockedException;
 import it.packovery.service.exception.GenericException;
@@ -24,9 +25,12 @@ public class LoginRepository implements PanacheRepository<Login> {
 
     private static final Logger LOG = Logger.getLogger(LoginResource.class);
     private final LoggingRepository loggingRepository;
+    private final LoggingService loggingService;
 
-    public LoginRepository(LoggingRepository loggingRepository) {
+    public LoginRepository(LoggingRepository loggingRepository, LoggingService loggingService)
+    {
         this.loggingRepository = loggingRepository;
+        this.loggingService = loggingService;
     }
 
     @Transactional
@@ -88,15 +92,18 @@ public class LoginRepository implements PanacheRepository<Login> {
             case 3 -> {
                 LOG.warnf("SECURITY EVENT - Temporarily blocked user with email: [%s]", login.getEmail());
                 login.setBlockedUntil(OffsetDateTime.now().plusMinutes(30));
+                loggingService.logUserBlocked(login.getId());
             }
             case 5 -> {
                 LOG.warnf("SECURITY EVENT - Temporarily blocked user with email: [%s]", login.getEmail());
                 login.setBlockedUntil(OffsetDateTime.now().plusHours(1));
+                loggingService.logUserBlocked(login.getId());
             }
             case 6 -> {
                 //loggingRepository.createUserBlockedLogRecord(login.getId());
                 LOG.warnf("SECURITY EVENT - Permanently blocked user with email: [%s]", login.getEmail());
                 login.setPermanentlyBlocked(true);
+                loggingService.logUserBlocked(login.getId());
             }
         }
 
