@@ -3,6 +3,9 @@ package it.packovery.web.resource;
 import it.packovery.data.model.enumModel.OrderStatus;
 import it.packovery.data.model.enumModel.PackageSize;
 import it.packovery.data.model.enumModel.PackageWeight;
+import it.packovery.data.model.login.Login;
+import it.packovery.data.repository.LoginRepository;
+import it.packovery.service.LoggingService;
 import it.packovery.service.OrderService;
 import it.packovery.service.SecurityService;
 import it.packovery.web.model.OrderDetailsResponse;
@@ -31,10 +34,14 @@ public class OrderResource {
     private static final Logger LOG = Logger.getLogger(OrderResource.class);
     private final OrderService orderService;
     private final SecurityService securityService;
+    private final LoggingService loggingService;
+    private final LoginRepository loginRepository;
 
-    public OrderResource(OrderService orderService, SecurityService securityService) {
+    public OrderResource(OrderService orderService, SecurityService securityService, LoggingService loggingService, LoginRepository loginRepository) {
         this.orderService = orderService;
         this.securityService = securityService;
+        this.loggingService = loggingService;
+        this.loginRepository = loginRepository;
     }
 
     @GET
@@ -64,6 +71,8 @@ public class OrderResource {
 
         LOG.infof("SECURITY EVENT - User [%s] is accessing Orders list. Filtered by Status: [%s], Page: [%d]",
                 userEmail, orderType, page);
+
+        loggingService.logViewedOpenOrder(getUserIdFromEmail(userEmail));
 
         Map<String, Object> filters = new HashMap<>();
         if (id != 0) filters.put("id", id);
@@ -166,7 +175,17 @@ public class OrderResource {
         LOG.infof("SECURITY EVENT - User [%s] accessed Detailed Order ID: [%d]. Current Order Status: [%s]",
                 userEmail, id, orderStatus);
 
+        loggingService.logViewedClosedOrder(getUserIdFromEmail(userEmail));
+
         return Response.ok(orderDetailsResponse).build();
+    }
+
+    private Long getUserIdFromEmail(String email) {
+        Login login = loginRepository.findByEmail(email);
+        if (login == null) {
+            throw new NotFoundException("User not found for email: " + email);
+        }
+        return login.getId();
     }
 }
 
