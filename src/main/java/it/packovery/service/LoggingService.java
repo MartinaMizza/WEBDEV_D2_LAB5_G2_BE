@@ -26,4 +26,20 @@ public class LoggingService {
 
         loggingRepository.updateLogRecordsAtLogout(login.getId());
     }
+
+    public void logLogin(Long userId) {
+        loggingRepository.createLoginLogRecord(userId);
+    }
+
+    public void logViewedOpenOrder(Long userId) {
+        loggingRepository.createViewedOpenOrderLogRecord(userId);
+    }
+
+    public void logViewedClosedOrder(Long userId) {
+        loggingRepository.createViewedClosedOrderLogRecord(userId);
+    }
+
+    public void logUserBlocked(Long userId) {
+        loggingRepository.createUserBlockedLogRecord(userId);
+    }
 }
