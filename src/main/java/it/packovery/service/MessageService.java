@@ -49,7 +49,7 @@ public class MessageService {
             throw new SendMessageException("Order has no rider");
         }
 
-        if (!order.getOrderStatus().equals(OrderStatus.IN_TRANSIT) || !order.getOrderStatus().equals(OrderStatus.READY)) {
+        if (!order.getOrderStatus().equals(OrderStatus.IN_TRANSIT) && !order.getOrderStatus().equals(OrderStatus.READY)) {
             throw new SendMessageException("Order is already delivered or canceled");
         }
 
