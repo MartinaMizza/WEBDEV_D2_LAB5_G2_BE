@@ -5,7 +5,6 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Parameters;
 import it.packovery.data.model.login.Login;
 import it.packovery.service.LoggingService;
-import it.packovery.service.LoginService;
 import it.packovery.service.exception.AccountPermanentlyBlockedException;
 import it.packovery.service.exception.AccountTemporarilyBlockedException;
 import it.packovery.service.exception.GenericException;
@@ -25,12 +24,10 @@ import java.time.format.DateTimeFormatter;
 public class LoginRepository implements PanacheRepository<Login> {
 
     private static final Logger LOG = Logger.getLogger(LoginResource.class);
-    private final LoggingRepository loggingRepository;
     private final LoggingService loggingService;
 
-    public LoginRepository(LoggingRepository loggingRepository, LoggingService loggingService)
+    public LoginRepository(LoggingService loggingService)
     {
-        this.loggingRepository = loggingRepository;
         this.loggingService = loggingService;
     }
 
