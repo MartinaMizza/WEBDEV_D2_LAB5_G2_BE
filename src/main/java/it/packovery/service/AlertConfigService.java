@@ -12,9 +12,12 @@ import it.packovery.web.model.AlertConfigResponse;
 import it.packovery.web.model.CreateAlertConfigRequest;
 import it.packovery.web.model.UpdateAlertConfigRequest;
 import it.packovery.web.model.UpdateStateAlertConfigRequest;
+import it.packovery.web.resource.AlertConfigResource;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -23,8 +26,11 @@ import java.util.List;
 @ApplicationScoped
 public class AlertConfigService {
 
+    private static final Logger LOG = Logger.getLogger(AlertConfigResource.class);
+
     private final AlertConfigRepository alertConfigRepository;
     private final LoginRepository loginRepository;
+
 
     public AlertConfigService(AlertConfigRepository alertConfigRepository, LoginRepository loginRepository) {
         this.alertConfigRepository = alertConfigRepository;
@@ -66,6 +72,8 @@ public class AlertConfigService {
             alertConfigRepository.persist(newAlertConfig);
         }
         catch (PersistenceException e) {
+            MDC.put("event_outcome", "failure");
+            LOG.error("Database error during AlertConfig creation", e);
             throw new AlertConfigCreationException("Failed to create alert config due to server error", e);
         }
 
@@ -77,6 +85,8 @@ public class AlertConfigService {
         AlertConfig alertConfig = alertConfigRepository.findById(id);
 
         if (alertConfig == null) {
+            MDC.put("event_outcome", "failure");
+            LOG.warn("Alert config with id: " + id + " not found");
             throw new NotFoundException("Alert config with id: " + id + " not found");
         }
 
@@ -101,6 +111,8 @@ public class AlertConfigService {
         AlertConfig alertConfig = alertConfigRepository.findById(id);
 
         if (alertConfig == null) {
+            MDC.put("event_outcome", "failure");
+            LOG.warn("Alert config with id: " + id + " not found");
             throw new NotFoundException("Alert config with id: " + id + " not found");
         }
 
@@ -119,6 +131,8 @@ public class AlertConfigService {
         AlertConfig alertConfig = alertConfigRepository.findById(id);
 
         if (alertConfig == null) {
+            MDC.put("event_outcome", "failure");
+            LOG.warn("Alert config with id: " + id + " not found");
             throw new NotFoundException("Alert config with id: " + id + " not found");
         }
 
@@ -129,6 +143,8 @@ public class AlertConfigService {
             alertConfigRepository.delete(alertConfig);
         }
         catch (PersistenceException e) {
+            MDC.put("event_outcome", "failure");
+            LOG.error("Database error during AlertConfig deletion", e);
             throw new AlertConfigDeletionException("Error deleting alert config", e);
         }
 
@@ -149,7 +165,9 @@ public class AlertConfigService {
 
     private static void canUpdateAlertConfig(AlertConfig alertConfig, Login login) {
         if (!alertConfig.getLogin().getId().equals(login.getId())) {
-            throw new UnauthorizedException("User not authorized to update alert config");
+            MDC.put("event_outcome", "failure");
+            LOG.warn("User not authorized to update alert config");
+            throw new UnauthorizedException("User not authorized to update or delete alert config");
         }
     }
 }

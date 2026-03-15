@@ -13,11 +13,17 @@ import it.packovery.service.exception.NotFoundException;
 import it.packovery.service.exception.EmailSendingException;
 import it.packovery.service.exception.SendMessageException;
 import it.packovery.web.model.SendMessageRequest;
+import it.packovery.web.resource.MessageResource;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 @ApplicationScoped
 public class MessageService {
+
+    private static final Logger LOG = Logger.getLogger(MessageResource.class);
 
     private final MessageRepository messageRepository;
     private final LoginRepository loginRepository;
@@ -46,16 +52,22 @@ public class MessageService {
 
         // Chiarire cosa voglia dire "preso in carico"
         if (order.getMapAndGps().getRider().getId() == null) {
+            MDC.put("event_outcome", "failure");
+            LOG.error("Order with ID: " + order.getId() + " has no rider");
             throw new SendMessageException("Order has no rider");
         }
 
         if (!order.getOrderStatus().equals(OrderStatus.IN_TRANSIT) && !order.getOrderStatus().equals(OrderStatus.READY)) {
-            throw new SendMessageException("Order is already delivered or canceled");
+            MDC.put("event_outcome", "failure");
+            LOG.error("Order with ID: " + order.getId() + " was already delivered or canceled");
+            throw new SendMessageException("Order was already delivered or canceled");
         }
 
         Login user = loginRepository.findByEmail(senderEmail);
 
         if (user == null) {
+            MDC.put("event_outcome", "failure");
+            LOG.warn("User not found");
             throw new NotFoundException("User not found");
         }
 
@@ -64,7 +76,15 @@ public class MessageService {
                 order.getMapAndGps().getRider(),
                 sendMessageRequest.getMessage()
         );
-        messageRepository.persist(message);
+
+        try {
+            messageRepository.persist(message);
+        }
+        catch (PersistenceException e) {
+            MDC.put("event_outcome", "failure");
+            LOG.error("Database error during message creation", e);
+            throw new EmailSendingException("Failed to create message due to server error", e);
+        }
 
         try {
             sendMessageNotification(
@@ -75,6 +95,8 @@ public class MessageService {
             );
         }
         catch (RuntimeException e) {
+            MDC.put("event_outcome", "failure");
+            LOG.error("Failed to send message notification to " + senderEmail, e);
             throw new EmailSendingException(
                     "Failed to send message notification to " + senderEmail + " due to server error", e
             );

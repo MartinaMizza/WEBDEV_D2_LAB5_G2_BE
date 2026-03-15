@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 @Path("/api/message")
 public class MessageResource {
@@ -29,10 +30,13 @@ public class MessageResource {
                                   SendMessageRequest sendMessageRequest
     ) {
         String email = securityContext.getUserPrincipal().getName();
+        MDC.put("user_email", email);
+        MDC.put("event_type", "send_message");
 
-        LOG.infof("SECURITY EVENT - User [%s] is sending a message related to Order ID: [%s]",
-                email, sendMessageRequest.getOrderId());
         messageService.createMessage(sendMessageRequest, email);
+
+        MDC.put("event_outcome", "success");
+        LOG.info("SECURITY EVENT - User sent a message related to Order ID: " + sendMessageRequest.getOrderId());
 
         return Response.ok().build();
     }

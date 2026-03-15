@@ -10,7 +10,10 @@ import it.packovery.service.exception.NotFoundException;
 import it.packovery.service.model.Route;
 import it.packovery.web.model.OrderDetailsResponse;
 import it.packovery.web.model.OrderResponse;
+import it.packovery.web.resource.OrderResource;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +21,8 @@ import java.util.Map;
 
 @ApplicationScoped
 public class OrderService {
+
+    private static final Logger LOG = Logger.getLogger(OrderResource.class);
 
     private final OrderRepository orderRepository;
     private final LoginRepository loginRepository;
@@ -70,6 +75,8 @@ public class OrderService {
         Order order = orderRepository.findById(orderId);
 
         if (order == null) {
+            MDC.put("event_outcome", "failure");
+            LOG.warn("Order with id " + orderId + " not found");
             throw new NotFoundException("Order not found");
         }
 

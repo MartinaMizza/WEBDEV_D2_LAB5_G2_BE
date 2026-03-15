@@ -17,6 +17,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.jwt.Claims;
 import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -41,10 +42,14 @@ public class LoginResource {
     @Produces(MediaType.APPLICATION_JSON)
     @PermitAll
     public Response login(LoginRequest request) {
+
+        MDC.put("user_email", request.getEmail());
+        MDC.put("event_type", "login");
         LoginResponse user = loginService.authenticate(request.getEmail(), request.getPassword());
 
         if (user != null) {
-            LOG.infof("SECURITY EVENT - Successful login for user: [%s]", request.getEmail());
+            MDC.put("event_outcome", "success");
+            LOG.info("SECURITY EVENT - User login successful");
 
             loggingService.logLogin(user.getId());
 
@@ -53,10 +58,11 @@ public class LoginResource {
             return Response.ok(new TokenResponse(accessToken, refreshToken)).build();
         }
         else {
-            LOG.warnf("SECURITY EVENT - Failed login attempt for user: [%s]", request.getEmail());
-            return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
-        }
 
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Invalid credentials")
+                    .build();
+        }
     }
 
     @POST
@@ -65,16 +71,19 @@ public class LoginResource {
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"refresh_token"})
     public Response refresh(@Context SecurityContext securityContext) {
-        String email = securityContext.getUserPrincipal().getName();
 
-        LOG.infof("SECURITY EVENT - Session refresh requested for user: [%s]", email);
+        String email = securityContext.getUserPrincipal().getName();
+        MDC.put("user_email", email);
+        MDC.put("event_type", "refresh_token");
 
         LoginResponse loginResponse = loginService.getLoginByEmail(email);
 
         if (loginResponse == null) {
-            LOG.warnf("SECURITY EVENT - Refresh failed: user [%s] not found", email);
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
+
+        MDC.put("event_outcome", "success");
+        LOG.info("SECURITY EVENT - User refresh successful");
 
         String accessToken = getAccessToken(loginResponse);
         return Response.ok(new AccessTokenResponse(accessToken)).build();

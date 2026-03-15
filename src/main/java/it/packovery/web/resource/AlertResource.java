@@ -12,6 +12,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 import java.util.List;
 
@@ -58,9 +59,13 @@ public class AlertResource {
     ) {
         String userEmail = securityContext.getUserPrincipal().getName();
 
+        MDC.put("user_email", userEmail);
+        MDC.put("event_type", "alert_resolution");
+
         alertService.resolveAlert(id, userEmail);
 
-        LOG.infof("SECURITY EVENT - User [%s] is resolving Alert ID: [%d]", userEmail, id);
+        MDC.put("event_outcome", "success");
+        LOG.info("SECURITY EVENT - Resolved alert with id: " + id);
 
         return Response.ok("Alert resolved.").build();
     }
@@ -69,7 +74,11 @@ public class AlertResource {
     @RolesAllowed({"access_token"})
     @Path("/automatic/resolve")
     public Response automaticResolveAlert() {
-        LOG.infof("SECURITY EVENT - SYSTEM ACTION - Starting automatic alert resolution process");
+        MDC.put("user_email", "SYSTEM");
+        MDC.put("event_type", "alert_automatic_resolution");
+
+        MDC.put("event_outcome", "success");
+        LOG.infof("SECURITY EVENT - Automatic alert resolution started");
 
         /*
         if(alertService.automaticResolveAlert()){

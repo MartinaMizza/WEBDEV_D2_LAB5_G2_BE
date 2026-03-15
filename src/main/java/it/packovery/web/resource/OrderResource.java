@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -62,15 +63,9 @@ public class OrderResource {
             @QueryParam("size") String size
     ) throws Exception {
         String userEmail = securityContext.getUserPrincipal().getName();
-        String orderType;
-        if (status != null) {
-            orderType = status.toUpperCase();
-        } else {
-            orderType = "ALL TYPES";
-        }
 
-        LOG.infof("SECURITY EVENT - User [%s] is accessing Orders list. Filtered by Status: [%s], Page: [%d]",
-                userEmail, orderType, page);
+        MDC.put("user_email", userEmail);
+        MDC.put("event_type", "orders_list_access");
 
         loggingService.logViewedOpenOrder(getUserIdFromEmail(userEmail));
 
@@ -84,6 +79,7 @@ public class OrderResource {
             }
             catch (IllegalArgumentException e) {
                 String sanitizedStatus = securityService.sanitize(status);
+                MDC.put("event_outcome", "failure");
                 LOG.warnf("SECURITY ALERT - Invalid OrderStatus attempt by [%s]: [%s]", userEmail, sanitizedStatus);
 
                 return Response.status(Response.Status.BAD_REQUEST)
@@ -95,6 +91,7 @@ public class OrderResource {
         if (pickupLocation != null) {
             filters.put("pickupLocation", securityService.sanitize(pickupLocation));
         }
+
         if (deliveryLocation != null) {
             filters.put("deliveryLocation", securityService.sanitize(deliveryLocation));
         }
@@ -116,6 +113,7 @@ public class OrderResource {
             }
             catch (IllegalArgumentException e) {
                 String sanitizedWeight = securityService.sanitize(weight);
+                MDC.put("event_outcome", "failure");
                 LOG.warnf("SECURITY ALERT - Invalid PackageWeight attempt by [%s]: [%s]", userEmail, sanitizedWeight);
 
                 return Response.status(Response.Status.BAD_REQUEST)
@@ -131,6 +129,7 @@ public class OrderResource {
             }
             catch (IllegalArgumentException e) {
                 String sanitizedSize = securityService.sanitize(size);
+                MDC.put("event_outcome", "failure");
                 LOG.warnf("SECURITY ALERT - Invalid PackageSize attempt by [%s]: [%s]", userEmail, sanitizedSize);
 
                 return Response.status(Response.Status.BAD_REQUEST)
@@ -150,6 +149,9 @@ public class OrderResource {
         String sanitizedSortingDirection = securityService.sanitize(sortingDirection);
         List<OrderResponse> orderResponseList = orderService.findOrders(filters, sortingElement, sanitizedSortingDirection, page, offset);
 
+        MDC.put("event_outcome", "success");
+        LOG.info("SECURITY EVENT - User " + userEmail + " accessed Orders list");
+
         return Response.ok(orderResponseList).build();
     }
 
@@ -162,20 +164,15 @@ public class OrderResource {
             @Context SecurityContext securityContext
     ) throws Exception {
         String userEmail = securityContext.getUserPrincipal().getName();
+        MDC.put("user_email", userEmail);
+        MDC.put("event_type", "order_details_access");
+
         OrderDetailsResponse orderDetailsResponse = orderService.getDetailedOrderById(id, userEmail);
 
-        String orderStatus;
-        if (orderDetailsResponse != null) {
-            orderStatus = orderDetailsResponse.getOrderStatus();
-        }
-        else {
-            orderStatus = "NOT FOUND";
-        }
-
-        LOG.infof("SECURITY EVENT - User [%s] accessed Detailed Order ID: [%d]. Current Order Status: [%s]",
-                userEmail, id, orderStatus);
-
         loggingService.logViewedClosedOrder(getUserIdFromEmail(userEmail));
+
+        MDC.put("event_outcome", "success");
+        LOG.info("SECURITY EVENT - User " + userEmail + " accessed details of Order ID: " + id);
 
         return Response.ok(orderDetailsResponse).build();
     }

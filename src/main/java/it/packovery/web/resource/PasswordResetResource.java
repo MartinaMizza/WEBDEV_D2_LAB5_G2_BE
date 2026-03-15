@@ -14,6 +14,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.jwt.Claims;
 import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -37,14 +38,22 @@ public class PasswordResetResource {
     public Response requestReset(PasswordResetRequest passwordResetRequest) {
         String email = passwordResetRequest.getEmail();
 
+        MDC.put("user_email", email);
+        MDC.put("event_type", "password_reset_request");
+
         LOG.infof("SECURITY EVENT - Password reset requested for user: [%s]", email);
 
         LoginResponse loginResponse = passwordResetService.processPasswordResetRequest(passwordResetRequest);
 
         if (loginResponse != null) {
+            MDC.put("event_outcome", "success");
+            LOG.infof("SECURITY EVENT - Password reset token sent to user: [%s]", email);
+
             String passwordResetToken = getPasswordResetToken(loginResponse);
             return Response.ok(new PasswordResetTokenResponse(passwordResetToken)).build();
-        } else {
+        }
+        else {
+            MDC.put("event_outcome", "failure");
             LOG.warnf("SECURITY EVENT - Password reset failed: user [%s] does not exist", email);
             return Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
         }
@@ -59,13 +68,18 @@ public class PasswordResetResource {
             OtpVerificationRequest otpVerificationRequest
     ) {
         String email = securityContext.getUserPrincipal().getName();
+        MDC.put("user_email", email);
+        MDC.put("event_type", "OTP_verification");
 
         try {
             passwordResetService.processOtpVerificationRequest(email, otpVerificationRequest);
 
+            MDC.put("event_outcome", "success");
             LOG.infof("SECURITY EVENT - Password successfully reset for user: [%s]", email);
             return Response.ok().build();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            MDC.put("event_outcome", "failure");
             LOG.warnf("SECURITY EVENT - Failed password reset attempt (invalid OTP) for user: [%s]", email);
 
             return Response.status(Response.Status.BAD_REQUEST)
@@ -83,14 +97,19 @@ public class PasswordResetResource {
             NewPasswordRequest newPasswordRequest
     ) {
         String email = securityContext.getUserPrincipal().getName();
+        MDC.put("user_email", email);
+        MDC.put("event_type", "password_reset");
 
         try {
             passwordResetService.resetPassword(email, newPasswordRequest);
 
+            MDC.put("event_outcome", "success");
             LOG.infof("SECURITY EVENT - User [%s] has successfully changed his password.", email);
 
             return Response.ok().build();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            MDC.put("event_outcome", "failure");
             LOG.errorf("SECURITY EVENT - Critical error during password reset for user [%s]: %s", email, e.getMessage());
 
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)

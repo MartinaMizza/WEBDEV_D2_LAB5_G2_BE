@@ -7,8 +7,12 @@ import it.packovery.data.repository.AlertRepository;
 import it.packovery.data.repository.LoginRepository;
 import it.packovery.service.exception.NotFoundException;
 import it.packovery.web.model.exception.AlertResponse;
+import it.packovery.web.resource.AlertResource;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +20,8 @@ import java.util.List;
 @ApplicationScoped
 @Transactional
 public class AlertService {
+
+    private static final Logger LOG = Logger.getLogger(AlertResource.class);
 
     private final AlertRepository alertRepository;
     private final LoginRepository loginRepository;
@@ -65,6 +71,8 @@ public class AlertService {
         Alert alert = alertRepository.findById(id);
 
         if (alert == null) {
+            MDC.put("event_outcome", "failure");
+            LOG.warn("Alert with id " + id + " not found");
             throw new NotFoundException("Alert with id " + id + " not found");
         }
 

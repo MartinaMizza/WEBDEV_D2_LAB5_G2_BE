@@ -5,11 +5,15 @@ import it.packovery.data.repository.LoggingRepository;
 import it.packovery.data.repository.LoginRepository;
 import it.packovery.service.exception.*;
 import it.packovery.web.model.LoginResponse;
+import it.packovery.web.resource.LoginResource;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 @ApplicationScoped
 public class LoginService {
 
+    private static final Logger LOG = Logger.getLogger(LoginResource.class);
     private final LoginRepository loginRepository;
     private final LoggingRepository loggingRepository;
 
@@ -22,6 +26,8 @@ public class LoginService {
         Login login = loginRepository.authenticate(email, password);
 
         if (login == null) {
+            MDC.put("event_outcome", "failure");
+            LOG.warn("SECURITY EVENT - User login failed");
             throw new InvalidCredentialsException("Email or password are incorrect");
         }
 
@@ -35,6 +41,8 @@ public class LoginService {
             login = loginRepository.findByEmail(email);
         }
         catch (Exception e) {
+            MDC.put("event_outcome", "failure");
+            LOG.error("Failed to retrieve user due to server error", e);
             throw new GenericException("Failed to retrieve user due to server error");
         }
 
@@ -42,6 +50,8 @@ public class LoginService {
             return toLoginResponse(login);
         }
         else {
+            MDC.put("event_outcome", "failure");
+            LOG.warn("SECURITY EVENT - User refresh failed. No user found with email: " + email);
             throw new NotFoundException("No user found with email: " + email);
         }
     }

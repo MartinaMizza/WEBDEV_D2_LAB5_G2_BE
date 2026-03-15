@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 import java.util.List;
 
@@ -50,11 +51,12 @@ public class AlertConfigResource {
             CreateAlertConfigRequest alertConfigRequest
     ) {
         String userEmail = securityContext.getUserPrincipal().getName();
-
-        LOG.infof("SECURITY EVENT - User [%s] is creating a new Alert Config: [Name: %s, Type: %s]",
-                userEmail, alertConfigRequest.getName(), alertConfigRequest.getType());
+        MDC.put("user_email", userEmail);
+        MDC.put("event_type", "create_alert_config");
 
         AlertConfigResponse alertConfigResponse = alertConfigService.createAlertConfig(userEmail, alertConfigRequest);
+        MDC.put("event_outcome", "success");
+        LOG.info("SECURITY EVENT - Config created: " + alertConfigResponse.getName());
 
         return Response.ok(alertConfigResponse).build();
     }
@@ -71,16 +73,19 @@ public class AlertConfigResource {
             UpdateAlertConfigRequest updateAlertConfigRequest
     ) {
         String userEmail = securityContext.getUserPrincipal().getName();
-        String sanitizedId = securityService.sanitize(id);
+        MDC.put("user_email", userEmail);
+        MDC.put("event_type", "update_alert_config");
 
-        LOG.infof("SECURITY EVENT - User [%s] updated Alert Config ID: [%s]. New Threshold: [%s], State: [%b]",
-                userEmail, sanitizedId, updateAlertConfigRequest.getThreshold(), updateAlertConfigRequest.getState());
+        String sanitizedId = securityService.sanitize(id);
 
         AlertConfigResponse alertConfigResponse = alertConfigService.updateAlertConfig(
                 sanitizedId,
                 updateAlertConfigRequest,
                 userEmail
         );
+
+        MDC.put("event_outcome", "success");
+        LOG.info("SECURITY EVENT - Config updated: " + alertConfigResponse.getName());
 
         return Response.ok(alertConfigResponse).build();
     }
@@ -97,16 +102,20 @@ public class AlertConfigResource {
             UpdateStateAlertConfigRequest updateStateAlertConfigRequest
     ) {
         String userEmail = securityContext.getUserPrincipal().getName();
-        String sanitizedId = securityService.sanitize(id);
 
-        LOG.infof("SECURITY EVENT - User [%s] updated Alert Config ID: [%s]. New Threshold: [%s], State: [%b]",
-                userEmail, sanitizedId, updateStateAlertConfigRequest.getState());
+        MDC.put("user_email", userEmail);
+        MDC.put("event_type", "update_alert_config_state");
+
+        String sanitizedId = securityService.sanitize(id);
 
         AlertConfigResponse alertConfigResponse = alertConfigService.updateStateAlertConfig(
                 sanitizedId,
                 updateStateAlertConfigRequest,
                 userEmail
         );
+
+        MDC.put("event_outcome", "success");
+        LOG.info("SECURITY EVENT - Config state updated: " + alertConfigResponse.getName());
 
         return Response.ok(alertConfigResponse).build();
     }
@@ -121,12 +130,16 @@ public class AlertConfigResource {
             @PathParam("id") String id
     ) {
         String userEmail = securityContext.getUserPrincipal().getName();
+
+        MDC.put("user_email", userEmail);
+        MDC.put("event_type", "delete_alert_config");
+
         String sanitizedId = securityService.sanitize(id);
 
-        LOG.warnf("SECURITY EVENT - User [%s] is deleting Alert Config ID: [%s]",
-                userEmail, sanitizedId);
-
         AlertConfigResponse alertConfigResponse = alertConfigService.deleteAlertConfig(sanitizedId, userEmail);
+
+        MDC.put("event_outcome", "success");
+        LOG.info("SECURITY EVENT - Config deleted: " + alertConfigResponse.getName());
 
         return Response.ok(alertConfigResponse).build();
     }
